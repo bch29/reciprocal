@@ -1,0 +1,51 @@
+#+TITLE: Reciprocal Plan
+
+* Features
+
+** Food
+*** Database of ingredients
+**** Where to buy
+**** Preferred unit
+     - 'Item' for e.g. wraps and pieces of fruit
+     - Weight in grams for solids to be used in bulk
+     - Volume in ml for liquids
+     - Tbsp/tsp for spices, dried herbs, similar
+**** Cost per 100g or per 'unit'
+**** Nutrition?
+*** Database of recipes
+**** Ingredients (+ quantities)
+**** Rough preparation timeline (hands-on/hands-off)
+**** Nutrition?
+**** Displays ingredients using preferred units
+*** Recipe importer
+**** Must work with...
+     - Serious Eats
+     - BBC Good Food
+     - Akis Petretzikis
+**** Converts units to preferred unit per ingredient
+
+** Time planning
+
+*** Must handle:
+
+**** Cooking and eating times
+
+**** Work schedule
+
+**** Exercise
+
+     Calories burned per hour?
+
+**** Bed time
+     
+**** Transport between each place I need to be
+
+*** Get events from iCalendar or Google Calendar
+
+*** If events clash with planned exercise/eating, force me to reorganise
+
+*** Export to iCalendar or Google Calendar
+
+** Money
+
+

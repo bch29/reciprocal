@@ -1,0 +1,27 @@
+name:                reciprocal
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/bch29/reciprocal#readme
+license:             BSD3
+author:              Bradley Hardy
+maintainer:          bch29@cam.ac.uk
+copyright:           Bradley Hardy
+category:            Other
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - time
+  - text
+  - bytestring
+  - lens
+  - uri-bytestring
+  - megaparsec
+
+ghc-options:
+  - -Wall
+
+library:
+  source-dirs:      src
