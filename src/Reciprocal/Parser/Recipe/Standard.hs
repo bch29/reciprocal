@@ -1,17 +1,18 @@
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 module Reciprocal.Parser.Recipe.Standard where
 
-import Reciprocal.Prelude
+import           Reciprocal.Prelude
 
-import Text.Megaparsec
-import Text.Megaparsec.Char
-import Data.Char (GeneralCategory(Space, LineSeparator, ParagraphSeparator))
-import qualified URI.ByteString                  as URI
+import           Data.Char                    (GeneralCategory (Space, LineSeparator, ParagraphSeparator))
+import           Text.Megaparsec
+import           Text.Megaparsec.Char
+import qualified URI.ByteString               as URI
 
-import Reciprocal.Model.Food.Recipe
+import           Reciprocal.Model.Food.Recipe
 
-type Parser = Parsec Void Text
+import           Reciprocal.Parser.Core
+import           Reciprocal.Parser.Duration
 
 parseRecipe :: Parser Recipe
 parseRecipe = do
@@ -25,8 +26,13 @@ parseRecipe = do
         else Just initialDescCts
 
   let parseComponent =
-        partialRecipe source "Source" (Just <$> parseSource) <|>
-        partialRecipe description "Description" (Just <$> restOfSection 2)
+        choice
+        [ partialRecipe source "Source" (Just <$> parseSource)
+        , partialRecipe description "Description" (Just <$> restOfSection 2)
+        , partialRecipe duration "Duration" (Just <$> parseRecipeDuration)
+        , partialRecipe ingredients "Ingredients" parseRecipeIngredients
+        , partialRecipe instructions "Instructions" parseRecipeInstructions
+        ]
 
   components <- many parseComponent
   return (mconcat (initialDesc : components) & title .~ t)
@@ -48,6 +54,32 @@ parseSource = do
   case URI.parseURI URI.laxURIParserOptions (body ^. unpacked . packedChars) of
     Left _ -> return (SourceOther body)
     Right uri -> return (SourceWebsite uri)
+
+parseRecipeDuration :: Parser RecipeDuration
+parseRecipeDuration = choice
+  [ try $ do
+      activeDur <- parseDuration
+      space
+      void $ string "active"
+      space
+      void $ char ','
+      space
+      totalDur <- parseDuration
+      space
+      void $ string "total"
+      return (ActiveTotal activeDur totalDur)
+  , Undivided <$> parseDuration
+  ]
+
+parseRecipeInstructions :: Parser [Text]
+parseRecipeInstructions = sepBy (view packed <$> many anyChar) (endline >> char '-' >> space)
+
+parseRecipeIngredients :: Parser [RecipeIngredient]
+parseRecipeIngredients = sepBy parseRecipeIngredient endline
+
+parseRecipeIngredient :: Parser RecipeIngredient
+parseRecipeIngredient = undefined
+
 
 --------------------------------------------------------------------------------
 --  Markdown Combinators

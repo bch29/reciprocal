@@ -40,7 +40,7 @@ data RecipeIngredient =
   }
 
 data RecipeDuration
-  = ActivePassive Duration Duration
+  = ActiveTotal Duration Duration
   | Undivided Duration
 
 data RecipeSource

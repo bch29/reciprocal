@@ -17,6 +17,10 @@
 #  location: "./custom-snapshot.yaml"
 resolver: lts-10.0
 
+nix:
+  enable: true
+  path: [nixpkgs=/Users/brad/.nixpkgs]
+
 # User packages to be built.
 # Various formats can be used as shown in the example below.
 #

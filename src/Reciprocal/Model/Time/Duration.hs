@@ -3,6 +3,7 @@ module Reciprocal.Model.Time.Duration
   , _Hours
   , _Minutes
   , _Seconds
+  , addDuration
   , prettyDuration
   ) where
 
@@ -30,6 +31,11 @@ _Seconds = _Minutes . iso (* 60) (/ 60)
 --------------------------------------------------------------------------------
 --  Exported Other
 --------------------------------------------------------------------------------
+
+infixl 6 `addDuration`
+
+addDuration :: Duration -> Duration -> Duration
+addDuration (Hours x) (Hours y) = Hours (x + y)
 
 prettyDuration :: Duration -> String
 prettyDuration d =
