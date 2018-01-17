@@ -1,16 +1,16 @@
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs                  #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE StandaloneDeriving     #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
-module Reciprocal.Model.Food.Ingredient where
+module Reciprocal.Model.Ingredient where
 
-import Reciprocal.Prelude
+import           Reciprocal.Prelude
 
-import Reciprocal.Model.Food.Measure
+import           Reciprocal.Model.Measure
 
 --------------------------------------------------------------------------------
 --  Types
@@ -18,9 +18,9 @@ import Reciprocal.Model.Food.Measure
 
 data Ingredient =
   Ingredient
-  { _ingredientName :: Text
+  { _ingredientName            :: Text
   , _ingredientDefaultUnitType :: UnitType
-  , _ingredientCategory :: Maybe Category
+  , _ingredientCategory        :: Maybe Category
   }
 
 data Category = UserCategory Text

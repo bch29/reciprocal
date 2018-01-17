@@ -3,15 +3,15 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TemplateHaskell        #-}
 
-module Reciprocal.Model.Food.Recipe where
+module Reciprocal.Model.Recipe where
 
 import           Reciprocal.Prelude
 
-import qualified URI.ByteString                  as URI
+import qualified URI.ByteString              as URI
 
-import           Reciprocal.Model.Food.Ingredient
-import           Reciprocal.Model.Food.Measure
-import           Reciprocal.Model.Time.Duration
+import           Reciprocal.Model.Duration
+import           Reciprocal.Model.Ingredient
+import           Reciprocal.Model.Measure
 
 --------------------------------------------------------------------------------
 --  Types

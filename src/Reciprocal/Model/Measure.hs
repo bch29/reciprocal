@@ -1,16 +1,16 @@
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs                  #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE StandaloneDeriving     #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
-module Reciprocal.Model.Food.Measure where
+module Reciprocal.Model.Measure where
 
-import Reciprocal.Prelude
+import           Reciprocal.Prelude
 
-import Data.Ratio (numerator, denominator)
+import           Data.Ratio         (denominator, numerator)
 
 --------------------------------------------------------------------------------
 --  Constants

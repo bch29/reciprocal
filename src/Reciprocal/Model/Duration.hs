@@ -1,4 +1,4 @@
-module Reciprocal.Model.Time.Duration
+module Reciprocal.Model.Duration
   ( Duration
   , _Hours
   , _Minutes
@@ -7,7 +7,7 @@ module Reciprocal.Model.Time.Duration
   , prettyDuration
   ) where
 
-import Control.Lens
+import           Control.Lens
 
 --------------------------------------------------------------------------------
 --  Types
