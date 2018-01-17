@@ -1,5 +1,7 @@
 .DS_Store
 
+stack.yaml
+
 /reciprocal.cabal
 /.stack-work
 /env-home
