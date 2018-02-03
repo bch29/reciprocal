@@ -19,6 +19,7 @@ dependencies:
   - lens
   - uri-bytestring
   - megaparsec
+  - parser-combinators >= 0.4
 
 ghc-options:
   - -Wall

@@ -82,6 +82,22 @@ magnifyMeasureUnit x =
   over unit (magnifyUnit x) .
   over amount (* (10 ^ (-x)))
 
+--------------------------------------------------------------------------------
+--  Combinators
+--------------------------------------------------------------------------------
+
+infixl 5 `addMeasure`
+
+addMeasure :: Measure t -> Measure t -> Measure t
+addMeasure m1 m2 =
+  let Measure a1 u = toStandardMeasure m1
+      Measure a2 _ = toStandardMeasure m2
+  in Measure (a1 + a2) u
+
+--------------------------------------------------------------------------------
+--  Conversion
+--------------------------------------------------------------------------------
+
 -- | Given a unit, return the standard unit of the same 'UnitType', along with
 -- the factor to multiply an amount of the old unit by to get an amount of the
 -- new unit.
@@ -130,10 +146,6 @@ remagnifyMeasure m = magnifyMeasureUnit (-logAmountThrees) m
 -- TODO: make this configurable, e.g. for choosing between metric and imperial.
 toUserMeasure :: Measure t -> Measure t
 toUserMeasure = remagnifyMeasure . tryLitresToSpoons . toStandardMeasure
-
---------------------------------------------------------------------------------
---  Conversion
---------------------------------------------------------------------------------
 
 {- |
 Returns how many times bigger the given unit is than the standard unit of

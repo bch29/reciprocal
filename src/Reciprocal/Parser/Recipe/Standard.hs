@@ -4,12 +4,16 @@ module Reciprocal.Parser.Recipe.Standard where
 
 import           Reciprocal.Prelude
 
-import           Data.Char                    (GeneralCategory (Space, LineSeparator, ParagraphSeparator))
+import           Data.Ratio                 ((%))
+import qualified URI.ByteString             as URI
+
+import           Data.Char                  (GeneralCategory (Space, LineSeparator, ParagraphSeparator))
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
-import qualified URI.ByteString               as URI
+import qualified Control.Monad.Combinators.NonEmpty as NE
 
-import           Reciprocal.Model.Food.Recipe
+import           Reciprocal.Model.Measure
+import           Reciprocal.Model.Recipe
 
 import           Reciprocal.Parser.Core
 import           Reciprocal.Parser.Duration
@@ -80,6 +84,51 @@ parseRecipeIngredients = sepBy parseRecipeIngredient endline
 parseRecipeIngredient :: Parser RecipeIngredient
 parseRecipeIngredient = undefined
 
+parseMeasure :: Parser (Some Measure)
+parseMeasure = undefined
+
+parse1Measure :: Parser (Some Measure)
+parse1Measure = choice
+  [ try $ do
+      x <- parseAmount
+      space
+      Some u <- parseUnit
+      return $ Some $ Measure x u
+  ]
+
+parseAmount :: Parser Rational
+parseAmount = choice
+  [
+    -- Just an integer
+    try parseInteger
+    -- Just a decimal number
+  , try $ do
+      wholePart <- parseInteger
+      void $ char '.'
+      fractionDigits <- many digitChar
+      return $ wholePart + read fractionDigits / (10^length fractionDigits)
+    -- Just a fraction
+  , try parseFraction
+    -- Whole part plus fractional part (i.e. mixed number)
+  , try $ do
+      wholePart <- parseInteger
+      void $ some spaceChar
+      fractionalPart <- parseFraction
+      return (wholePart + fractionalPart)
+  ]
+
+parseFraction :: Parser Rational
+parseFraction = try $ do
+  numerator <- parseInteger
+  space
+  void $ char '/'
+  space
+  denominator <- parseInteger
+  return $ numerator % denominator
+
+
+parseUnit :: Parser (Some Unit)
+parseUnit = undefined
 
 --------------------------------------------------------------------------------
 --  Markdown Combinators

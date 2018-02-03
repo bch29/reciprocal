@@ -6,7 +6,7 @@ import           Reciprocal.Prelude
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 
-import           Reciprocal.Model.Time.Duration
+import           Reciprocal.Model.Duration
 
 import           Reciprocal.Parser.Core
 
@@ -30,8 +30,3 @@ numWithSuffix suffices = do
   void $ choice (map (try . string) suffices)
   space
   return res
-
-parseInteger :: Num a => Parser a
-parseInteger = do
-  digits <- many digitChar
-  return (fromIntegral (read digits :: Integer))
