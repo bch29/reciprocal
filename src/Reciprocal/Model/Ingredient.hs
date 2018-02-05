@@ -22,8 +22,10 @@ data Ingredient =
   , _ingredientDefaultUnitType :: UnitType
   , _ingredientCategory        :: Maybe Category
   }
+  deriving (Eq, Ord, Show)
 
 data Category = UserCategory Text
+  deriving (Eq, Ord, Show)
 
 --------------------------------------------------------------------------------
 --  Lenses

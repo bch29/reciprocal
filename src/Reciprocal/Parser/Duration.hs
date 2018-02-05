@@ -12,9 +12,9 @@ import           Reciprocal.Parser.Core
 
 
 hourSuffices, minuteSuffices, secondSuffices :: [Text]
-hourSuffices = ["h", "hr", "hrs", "hours"]
-minuteSuffices = ["m", "min", "mins", "minutes"]
-secondSuffices = ["s", "sec", "secs", "seconds"]
+hourSuffices = ["hours", "hrs", "hr", "h"]
+minuteSuffices = ["minutes", "mins", "min", "m"]
+secondSuffices = ["seconds", "secs", "sec", "s"]
 
 parseDuration :: Parser Duration
 parseDuration = do

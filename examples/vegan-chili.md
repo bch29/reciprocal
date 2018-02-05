@@ -6,7 +6,7 @@ A 100% vegan chili recipe that has all of the deep chili flavor, textural contra
 
 http://www.seriouseats.com/recipes/2012/01/best-vegetarian-bean-chile-recipe.html
 
-## Time
+## Duration
 
 30 minutes active, 2 hours total
 
@@ -16,10 +16,10 @@ http://www.seriouseats.com/recipes/2012/01/best-vegetarian-bean-chile-recipe.htm
 
 ## Ingredients
 
+- 1 quart water
 - 3 whole sweet dried chilies, stems and seeds removed
 - 2 whole small hot dried chilies, stems and seeds removed (optional)
 - 3 whole rich fruity dried chilies, stems and seeds removed
-- 1 quart water
 - 2 whole chipotle chilies in adobo sauce, 2 tablespoons sauce from can
 - 28 ounces canned chickpeas
 - 28 ounces whole canned tomatoes

@@ -5,12 +5,14 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE StandaloneDeriving     #-}
 {-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE PolyKinds        #-}
 
 module Reciprocal.Model.Measure where
 
 import           Reciprocal.Prelude
 
 import           Data.Ratio         (denominator, numerator)
+import           Type.Class.Higher  (Show1(..))
 
 --------------------------------------------------------------------------------
 --  Constants
@@ -37,6 +39,7 @@ data UnitType
   | Volume
   | WholeT
   | ClovesT
+  deriving (Eq, Ord, Show)
 
 data Unit t where
   Grams :: Unit 'Mass
@@ -52,7 +55,15 @@ data Unit t where
 --  Instances
 --------------------------------------------------------------------------------
 
+deriving instance Eq (Measure t)
+deriving instance Ord (Measure t)
+deriving instance Show (Measure t)
+instance Show1 Measure where showsPrec1 = showsPrec
+
 deriving instance Eq (Unit t)
+deriving instance Ord (Unit t)
+deriving instance Show (Unit t)
+instance Show1 Unit where showsPrec1 = showsPrec
 
 --------------------------------------------------------------------------------
 --  Lenses

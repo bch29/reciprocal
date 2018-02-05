@@ -44,8 +44,19 @@ import Data.Text.Lens as Lens
 import Data.ByteString.Lens as Lens
 
 --------------------------------------------------------------------------------
+--  Non-public imports
+--------------------------------------------------------------------------------
+
+import Type.Class.Higher (Show1(..))
+
+--------------------------------------------------------------------------------
 --  Other
 --------------------------------------------------------------------------------
 
 data Some k where
   Some :: k a -> Some k
+
+instance Show1 k => Show (Some k) where
+  showsPrec p (Some x) =
+    showString "Some " .
+    showParen (p > 10) (showsPrec1 11 x)

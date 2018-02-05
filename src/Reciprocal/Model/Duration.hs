@@ -8,12 +8,14 @@ module Reciprocal.Model.Duration
   ) where
 
 import           Control.Lens
+import           Text.Show (showString, showParen)
 
 --------------------------------------------------------------------------------
 --  Types
 --------------------------------------------------------------------------------
 
 data Duration = Hours Double
+  deriving (Eq, Ord)
 
 --------------------------------------------------------------------------------
 --  Exported Lenses
@@ -27,6 +29,14 @@ _Minutes = _Hours . iso (* 60) (/ 60)
 
 _Seconds :: Iso' Duration Double
 _Seconds = _Minutes . iso (* 60) (/ 60)
+
+--------------------------------------------------------------------------------
+--  Instances
+--------------------------------------------------------------------------------
+
+instance Show Duration where
+  showsPrec p (Hours x) =
+    showString "_Hours # " . showParen (p > 8) (showsPrec 9 x)
 
 --------------------------------------------------------------------------------
 --  Exported Other

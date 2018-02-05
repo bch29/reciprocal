@@ -7,7 +7,7 @@ module Reciprocal.Model.Recipe where
 
 import           Reciprocal.Prelude
 
-import qualified URI.ByteString              as URI
+import qualified Text.URI as URI
 
 import           Reciprocal.Model.Duration
 import           Reciprocal.Model.Ingredient
@@ -29,7 +29,9 @@ data IngredientAttribute
   = Chopped IngredientFineness
   | Sliced IngredientFineness
   | Diced IngredientFineness
+  | Minced IngredientFineness
   | OtherAttr Text
+  deriving (Eq, Ord, Show)
 
 data RecipeIngredient =
   RecipeIngredient
@@ -38,15 +40,17 @@ data RecipeIngredient =
   , _recipeIngredientMeasure    :: Some Measure
   , _recipeIngredientAttributes :: [IngredientAttribute]
   }
+  deriving (Show)
 
 data RecipeDuration
   = ActiveTotal Duration Duration
   | Undivided Duration
+  deriving (Show)
 
 data RecipeSource
-  = SourceWebsite (URI.URIRef URI.Absolute)
+  = SourceWebsite URI.URI
   | SourceOther Text
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 data Recipe =
   Recipe
@@ -54,9 +58,11 @@ data Recipe =
   , _recipeDescription  :: Maybe Text
   , _recipeSource       :: Maybe RecipeSource
   , _recipeDuration     :: Maybe RecipeDuration
+  , _recipeServings     :: Maybe Rational
   , _recipeIngredients  :: [RecipeIngredient]
   , _recipeInstructions :: [Text]
   }
+  deriving (Show)
 
 --------------------------------------------------------------------------------
 --  Lenses
@@ -80,11 +86,12 @@ instance Semigroup Recipe where
     ((r1 ^. description) <|> (r2 ^. description))
     ((r1 ^. source) <|> (r2 ^. source))
     ((r1 ^. duration) <|> (r2 ^. duration))
+    ((r1 ^. servings) <|> (r2 ^. servings))
     ((r1 ^. ingredients) <> (r2 ^. ingredients))
     ((r1 ^. instructions) <> (r2 ^. instructions))
 
 instance Monoid Recipe where
-  mempty = Recipe mempty Nothing Nothing Nothing [] []
+  mempty = Recipe mempty Nothing Nothing Nothing Nothing [] []
   mappend = (<>)
 
 -- data Recipe
