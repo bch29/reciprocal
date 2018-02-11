@@ -13,21 +13,23 @@ extra-source-files:
 
 dependencies:
   - base >= 4.7 && < 5
-  - time
-  - text
+  - aeson
   - bytestring
+  - containers
+  - directory
+  - filepath
+  - hashable
   - lens
-  - modern-uri
   - megaparsec >= 6.0
+  - modern-uri
+  - mtl
+  - transformers
   - parser-combinators >= 0.4
-  - type-combinators
   - singletons
   - streaming
-  - containers
-  - hashable
-  - filepath
-  - directory
-  - aeson
+  - text
+  - time
+  - type-combinators
   - vector
 
 default-extensions:

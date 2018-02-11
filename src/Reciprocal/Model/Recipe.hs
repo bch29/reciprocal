@@ -47,7 +47,7 @@ data RecipeDuration
   deriving anyclass (ToJSON, FromJSON)
 
 data RecipeSource
-  = SourceWebsite URI.URI
+  = SourceWebsite URI
   | SourceOther Text
   deriving (Eq, Ord, Show, Typeable, Generic)
   deriving anyclass (ToJSON, FromJSON)
