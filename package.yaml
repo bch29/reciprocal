@@ -55,3 +55,7 @@ ghc-options:
 
 library:
   source-dirs:      src
+
+executable:
+  source-dirs: app
+  main: Main.hs

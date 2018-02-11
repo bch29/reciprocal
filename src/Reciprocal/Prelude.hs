@@ -19,6 +19,7 @@ module Reciprocal.Prelude
     -- * Combinators
   , module Monad
   , module MonadIO
+  , module MonadTrans
   , module Applicative
   , module Semigroup
 
@@ -60,6 +61,7 @@ import qualified Data.Aeson as Aeson
 
 import Control.Monad as Monad (void, guard, when, unless)
 import Control.Monad.IO.Class as MonadIO (MonadIO(liftIO))
+import Control.Monad.Trans.Class as MonadTrans (MonadTrans(..))
 import Control.Applicative as Applicative (Alternative(..))
 import Data.Semigroup as Semigroup (Semigroup(..))
 
