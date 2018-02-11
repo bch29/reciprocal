@@ -1,6 +1,3 @@
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE TemplateHaskell        #-}
 
 module Reciprocal.Model.Recipe where
@@ -23,7 +20,8 @@ data IngredientFineness
   | MediumFine
   | Rough
   | VeryRough
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data IngredientAttribute
   = Chopped IngredientFineness
@@ -31,26 +29,30 @@ data IngredientAttribute
   | Diced IngredientFineness
   | Minced IngredientFineness
   | OtherAttr Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data RecipeIngredient =
   RecipeIngredient
   { _recipeIngredientIngredient :: Either Text Ingredient
     -- ^ 'Text' if the ingredient is unlisted in the database
-  , _recipeIngredientMeasure    :: Some Measure
-  , _recipeIngredientAttributes :: [IngredientAttribute]
+  , _recipeIngredientMeasure :: Some MeasureRange
+  , _recipeIngredientAttributes  :: [IngredientAttribute]
   }
-  deriving (Show)
+  deriving (Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data RecipeDuration
   = ActiveTotal Duration Duration
   | Undivided Duration
-  deriving (Show)
+  deriving (Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data RecipeSource
   = SourceWebsite URI.URI
   | SourceOther Text
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 data Recipe =
   Recipe
@@ -62,7 +64,8 @@ data Recipe =
   , _recipeIngredients  :: [RecipeIngredient]
   , _recipeInstructions :: [Text]
   }
-  deriving (Show)
+  deriving (Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 --------------------------------------------------------------------------------
 --  Lenses

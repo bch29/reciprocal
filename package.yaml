@@ -21,6 +21,32 @@ dependencies:
   - megaparsec >= 6.0
   - parser-combinators >= 0.4
   - type-combinators
+  - singletons
+  - streaming
+  - containers
+  - hashable
+  - filepath
+  - directory
+  - aeson
+  - vector
+
+default-extensions:
+  - DataKinds
+  - DeriveAnyClass
+  - DeriveDataTypeable
+  - DeriveGeneric
+  - DerivingStrategies
+  - FlexibleInstances
+  - FunctionalDependencies
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - MultiParamTypeClasses
+  - PolyKinds
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TypeFamilies
+  - LambdaCase
+  - OverloadedStrings
 
 ghc-options:
   - -Wall

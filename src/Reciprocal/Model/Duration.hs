@@ -7,7 +7,8 @@ module Reciprocal.Model.Duration
   , prettyDuration
   ) where
 
-import           Control.Lens
+import Reciprocal.Prelude
+
 import           Text.Show (showString, showParen)
 
 --------------------------------------------------------------------------------
@@ -15,7 +16,8 @@ import           Text.Show (showString, showParen)
 --------------------------------------------------------------------------------
 
 data Duration = Hours Double
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Typeable, Generic)
+  deriving anyclass (FromJSON, ToJSON)
 
 --------------------------------------------------------------------------------
 --  Exported Lenses

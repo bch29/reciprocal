@@ -1,15 +1,14 @@
+{-# LANGUAGE GADTs               #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module Reciprocal.Parser.Recipe.Standard where
+{-# LANGUAGE TypeApplications    #-}
+{-# LANGUAGE TypeFamilies        #-}
+module Reciprocal.Parser.General where
 
 import           Reciprocal.Prelude
 
-import qualified Data.Text as Text
 import           Text.Megaparsec
-import           Text.Megaparsec.Error      (parseErrorPretty)
-
-import           Debug.Trace                (traceM, traceShowM)
 
 import           Reciprocal.Model.Measure
 import           Reciprocal.Model.Recipe
@@ -17,54 +16,6 @@ import           Reciprocal.Model.Recipe
 import           Reciprocal.Parser.Core
 import           Reciprocal.Parser.Duration
 import           Reciprocal.Parser.Lexer
-
-test :: IO ()
-test = do
-  let fname = "/home/brad/code/reciprocal/examples/vegan-chili.md"
-  contents :: Text <- view packed <$> readFile fname
-
-  case runParser parseRecipe fname contents of
-    Left e  -> putStr (parseErrorPretty e)
-    Right x -> print x
-
-parseRecipe :: Parser Recipe
-parseRecipe = do
-  traceM "Looking for title"
-  t <- anyHeading 1
-
-  traceM $ "Got title '" ++ (t ^. unpacked) ++ "'"
-
-  initialDescCts <- restOfSection 2
-  let initialDesc = mempty & description .~
-        if initialDescCts == ""
-        then Nothing
-        else Just initialDescCts
-
-  let parseComponent =
-        choice . mapUntilLast try id $
-        [ partialRecipe source "Source" (Just <$> parseSource)
-        , partialRecipe description "Description" (Just <$> restOfSection 2)
-        , partialRecipe duration "Duration" (Just <$> parseRecipeDuration)
-        , partialRecipe servings "Servings" (Just <$> parseServings)
-        , partialRecipe ingredients "Ingredients" parseRecipeIngredients
-        , partialRecipe instructions "Instructions" parseRecipeInstructions
-        ]
-
-  components <- many parseComponent
-  eof
-  return (mconcat (initialDesc : components) & title .~ t)
-
---------------------------------------------------------------------------------
---  Recipe Components
---------------------------------------------------------------------------------
-
-partialRecipe :: ASetter' Recipe a -> Text -> Parser a -> Parser Recipe
-partialRecipe l idealTitle bodyParser = label (idealTitle ^. unpacked) $ do
-  traceM $ "Trying to parse " ++ (idealTitle ^. unpacked)
-  heading 2 idealTitle
-  x <- bodyParser
-  traceM $ "Got body for " ++ (idealTitle ^. unpacked)
-  return (mempty & l .~ x)
 
 parseSource :: Parser RecipeSource
 parseSource = try (SourceWebsite <$> uri) <|> (SourceOther <$> restOfSection 2)
@@ -84,26 +35,16 @@ parseRecipeDuration = choice
   , Undivided <$> parseDuration
   ]
 
-parseRecipeInstructions :: Parser [Text]
-parseRecipeInstructions =
-  sepBy
-    (Text.unwords <$> many (anyWord <|> separator))
-    (try (endline >> lookAhead bullet))
-
-parseRecipeIngredients :: Parser [RecipeIngredient]
-parseRecipeIngredients = sepBy parseRecipeIngredient endline
-
 parseRecipeIngredient :: Parser RecipeIngredient
 parseRecipeIngredient = do
   option () (void bullet)
-  m <- parseMeasure
+  m <- parseMeasureRange
 
-  ingredientName <- Text.unwords <$> some anyWord
+  ingredientName <- unseparatedText
 
-  attrs <- option [] $ separator >> sepBy parseIngredientAttribute separator
+  attrs <- many $ try separator >> parseIngredientAttribute
 
   let res = RecipeIngredient (Left ingredientName) m attrs
-  traceShowM res
 
   return res
 
@@ -113,7 +54,7 @@ parseIngredientAttribute = choice
   , try $ parseWithFineness (word "diced") (const Diced)
   , try $ parseWithFineness (word "sliced") (const Sliced)
   , try $ parseWithFineness (word "minced") (const Minced)
-  , OtherAttr . Text.unwords <$> many anyWord
+  , OtherAttr <$> unseparatedText
   ]
 
 parseWithFineness :: Parser a -> (a -> IngredientFineness -> b) -> Parser b
@@ -140,8 +81,30 @@ parseIngredientFineness =
       , VeryRough)
     ]
 
+castMeasure :: (Typeable t, Typeable t') => Measure t -> Maybe (Measure t')
+castMeasure = gcast
 
--- TODO: Handle ranges of measures
+parseMeasureRange :: Parser (Some MeasureRange)
+parseMeasureRange = choice
+  [ try $ do
+      ar <- parseAmountRange
+      space
+      Some u <- option (Some Whole) parseUnit
+      return . Some $ case ar of
+        Left x -> SingleMR (Measure x u)
+        Right (x, y) -> RangeMR (Measure x u) (Measure y u)
+  , do Some (lower :: Measure t) <- parseMeasure
+       higher <- option Nothing $ do
+         _ <- symbol "-"
+         Some (h :: Measure t') <- parseMeasure
+         return (castMeasure h)
+
+       return . Some $ case higher of
+         Just h -> RangeMR lower h
+         Nothing -> SingleMR lower
+  ]
+
+
 parseMeasure :: Parser (Some Measure)
 parseMeasure = choice
   [ do x <- parseAmount
@@ -153,6 +116,17 @@ parseMeasure = choice
 -- TODO: fractions and mixed numbers
 parseAmount :: Parser Rational
 parseAmount = number
+
+parseAmountRange :: Parser (Either Rational (Rational, Rational))
+parseAmountRange = do
+  lower <- parseAmount
+  higher <- option Nothing $ do
+    _ <- symbol "-"
+    Just <$> parseAmount
+
+  return $ case higher of
+    Just h -> Right (lower, h)
+    Nothing -> Left lower
 
 -- parseFraction :: Parser Rational
 -- parseFraction = do

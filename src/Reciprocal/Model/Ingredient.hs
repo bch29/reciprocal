@@ -1,9 +1,3 @@
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE GADTs                  #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE StandaloneDeriving     #-}
 {-# LANGUAGE TemplateHaskell        #-}
 
 module Reciprocal.Model.Ingredient where
@@ -22,13 +16,16 @@ data Ingredient =
   , _ingredientDefaultUnitType :: UnitType
   , _ingredientCategory        :: Maybe Category
   }
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
-data Category = UserCategory Text
-  deriving (Eq, Ord, Show)
+newtype Category = UserCategory Text
+  deriving (Eq, Ord, Show, Typeable, Generic)
+  deriving anyclass (ToJSON, FromJSON)
 
 --------------------------------------------------------------------------------
 --  Lenses
 --------------------------------------------------------------------------------
 
 makeFields ''Ingredient
+makePrisms ''Category

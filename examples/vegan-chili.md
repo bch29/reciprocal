@@ -16,7 +16,7 @@ http://www.seriouseats.com/recipes/2012/01/best-vegetarian-bean-chile-recipe.htm
 
 ## Ingredients
 
-- 1 quart water
+- 1l water
 - 3 whole sweet dried chilies, stems and seeds removed
 - 2 whole small hot dried chilies, stems and seeds removed (optional)
 - 3 whole rich fruity dried chilies, stems and seeds removed
@@ -32,10 +32,9 @@ http://www.seriouseats.com/recipes/2012/01/best-vegetarian-bean-chile-recipe.htm
 - 1 teaspoon marmite or vegemite
 - 28 ounces canned dark red kidney beans, drained, liquid reserved separately
 - 2 tablespoons vodka or bourbon
-- Kosher salt
 - 2-3 tablespoons masa
 
-## Recipe
+## Instructions
 
 - Toast dry chilis, then add to water and chipotles, microwave on high for 5 minutes, then puree.
 - Drain chickpeas, reserving water, and roughly chop chickpeas in food processor

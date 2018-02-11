@@ -1,18 +1,14 @@
-{-# LANGUAGE DataKinds              #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE GADTs                  #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE StandaloneDeriving     #-}
 {-# LANGUAGE TemplateHaskell        #-}
-{-# LANGUAGE PolyKinds        #-}
+{-# LANGUAGE PatternSynonyms        #-}
 
 module Reciprocal.Model.Measure where
 
 import           Reciprocal.Prelude
 
 import           Data.Ratio         (denominator, numerator)
-import           Type.Class.Higher  (Show1(..))
+import           Type.Class.Higher  (Show1 (..))
+import Data.Aeson
+import Data.Aeson.Types (typeMismatch)
 
 --------------------------------------------------------------------------------
 --  Constants
@@ -28,48 +24,152 @@ litresPerTablespoon = 15 / 1000
 --  Types
 --------------------------------------------------------------------------------
 
-data Measure t
+data MeasureRange t
+  = SingleMR (Measure t)
+  | RangeMR (Measure t) (Measure t)
+  deriving (Generic, Typeable, Eq, Show)
+  deriving anyclass (ToJSON)
+
+data Measure (t :: UnitType)
   = Measure
   { _measureAmount :: Rational
-  , _measureUnit :: Unit t
+  , _measureUnit   :: Unit t
   }
+  deriving (Generic, Typeable, Eq, Show)
+  deriving anyclass (ToJSON)
 
 data UnitType
   = Mass
   | Volume
   | WholeT
   | ClovesT
-  deriving (Eq, Ord, Show)
+  deriving (Generic, Typeable, Eq, Ord, Show)
+  deriving anyclass (FromJSON, ToJSON)
+
+data MassUnit = MUGrams
+  deriving (Generic, Typeable, Eq, Ord, Show)
+  deriving anyclass (FromJSON, ToJSON)
+data VolumeUnit = VULitres | VUTeaspoons | VUTablespoons
+  deriving (Generic, Typeable, Eq, Ord, Show)
+  deriving anyclass (FromJSON, ToJSON)
+data WholeUnit = WUWhole
+  deriving (Generic, Typeable, Eq, Ord, Show)
+  deriving anyclass (FromJSON, ToJSON)
+data ClovesUnit = CUCloves
+  deriving (Generic, Typeable, Eq, Ord, Show)
+  deriving anyclass (FromJSON, ToJSON)
 
 data Unit t where
-  Grams :: Unit 'Mass
-  Litres :: Unit 'Volume
-  Teaspoons, Tablespoons :: Unit 'Volume
-
+  MU :: MassUnit -> Unit 'Mass
+  VU :: VolumeUnit -> Unit 'Volume
+  WU :: WholeUnit -> Unit 'WholeT
+  CU :: ClovesUnit -> Unit 'ClovesT
   Magnify :: Integer -> Unit t -> Unit t
+  deriving (Typeable)
 
-  Whole :: Unit 'WholeT
-  Cloves :: Unit 'ClovesT
+pattern Grams :: forall t. () => t ~ 'Mass => Unit t
+pattern Grams = MU MUGrams
+
+pattern Litres :: forall t. () => t ~ 'Volume => Unit t
+pattern Litres = VU VULitres
+
+pattern Teaspoons :: forall t. () => t ~ 'Volume => Unit t
+pattern Teaspoons = VU VUTeaspoons
+
+pattern Tablespoons :: forall t. () => t ~ 'Volume => Unit t
+pattern Tablespoons = VU VUTablespoons
+
+pattern Whole :: forall t. () => t ~ 'WholeT => Unit t
+pattern Whole = WU WUWhole
+
+pattern Cloves :: forall t. () => t ~ 'ClovesT => Unit t
+pattern Cloves = CU CUCloves
+
 
 --------------------------------------------------------------------------------
 --  Instances
 --------------------------------------------------------------------------------
 
-deriving instance Eq (Measure t)
-deriving instance Ord (Measure t)
-deriving instance Show (Measure t)
+instance Show1 MeasureRange where showsPrec1 = showsPrec
+
 instance Show1 Measure where showsPrec1 = showsPrec
 
+deriving instance Typeable (Unit t)
 deriving instance Eq (Unit t)
-deriving instance Ord (Unit t)
+-- deriving instance Ord (Unit t)
 deriving instance Show (Unit t)
 instance Show1 Unit where showsPrec1 = showsPrec
+
+data instance Sing (t :: UnitType) where
+  SMass :: Sing 'Mass
+  SVolume :: Sing 'Volume
+  SWholeT :: Sing 'WholeT
+  SClovesT :: Sing 'ClovesT
+
+instance SingI 'Mass where sing = SMass
+instance SingI 'Volume where sing = SVolume
+instance SingI 'WholeT where sing = SWholeT
+instance SingI 'ClovesT where sing = SClovesT
+
+instance ToJSON (Unit t) where
+  toJSON = \case
+    MU u -> Object (mempty & at "type" .~ Just "mass" & at "unit" .~ Just (toJSON u))
+    VU u -> Object (mempty & at "type" .~ Just "volume" & at "unit" .~ Just (toJSON u))
+    WU u -> Object (mempty & at "type" .~ Just "whole" & at "unit" .~ Just (toJSON u))
+    CU u -> Object (mempty & at "type" .~ Just "cloves" & at "unit" .~ Just (toJSON u))
+    Magnify x u -> Object (mempty & at "type" .~ Just "magnify"
+                                  & at "scale" .~ Just (toJSON x)
+                                  & at "unit" .~ Just (toJSON u))
+
+instance ToJSON (Some Unit) where
+  toJSON (Some u) = toJSON u
+instance ToJSON (Some Measure) where
+  toJSON (Some m) = toJSON m
+instance ToJSON (Some MeasureRange) where
+  toJSON (Some r) = toJSON r
+
+instance FromJSON (Some Unit) where
+  parseJSON (Object v) = do
+    ty :: Text <- v .: "type"
+    case ty of
+      "mass" -> Some . MU <$> v .: "unit"
+      "volume" -> Some . VU <$> v .: "unit"
+      "whole" -> Some . WU <$> v .: "unit"
+      "cloves" -> Some . CU <$> v .: "unit"
+      "magnify" -> do
+        Some u <- v .: "unit"
+        fmap Some $ Magnify <$> v .: "scale" <*> pure u
+      other -> fail $ "Unrecognised unit type " <> show other
+  parseJSON invalid = typeMismatch "Some Unit" invalid
+
+instance FromJSON (Some Measure) where
+  parseJSON = withObject "Some Measure" $ \v ->
+    do Some u <- v .: "_measureUnit"
+       fmap Some $ Measure <$> v .: "_measureAmount" <*> pure u
+
+instance FromJSON (Some MeasureRange) where
+  parseJSON = withObject "Some MeasureRange" $ \v ->
+    do tag :: Text <- v .: "tag"
+       case tag of
+         "SingleMR" -> do
+           Some m <- v .: "contents"
+           return $ Some $ SingleMR m
+         "RangeMR" -> do
+           arr :: Array <- v .: "contents"
+           v1 : v2 : [] <- return (arr ^.. traversed)
+           Some m1 <- parseJSON v1
+           Some m2 <- parseJSON v2
+           case gcast m2 of
+             Just m2' -> return (Some (RangeMR m1 m2'))
+             Nothing -> fail "Range of measures of different unit types"
+         other -> fail $ "Unrecognised MeasureRange tag " <> show other
 
 --------------------------------------------------------------------------------
 --  Lenses
 --------------------------------------------------------------------------------
 
 makeFields ''Measure
+makePrisms ''MeasureRange
 
 --------------------------------------------------------------------------------
 --  Smart Constructors
@@ -104,7 +204,7 @@ addMeasure m1 m2 =
   let Measure a1 u = toStandardMeasure m1
       Measure a2 _ = toStandardMeasure m2
   in Measure (a1 + a2) u
-
+ 
 --------------------------------------------------------------------------------
 --  Conversion
 --------------------------------------------------------------------------------
@@ -187,20 +287,32 @@ convertMeasureSimple toUnit measure =
 --  Pretty Printing
 --------------------------------------------------------------------------------
 
+prettyMassUnit :: MassUnit -> String
+prettyMassUnit MUGrams = "g"
+
+prettyVolumeUnit :: VolumeUnit -> String
+prettyVolumeUnit VULitres = "l"
+prettyVolumeUnit VUTeaspoons = "tsp"
+prettyVolumeUnit VUTablespoons = "tbsp"
+
+prettyWholeUnit :: WholeUnit -> String
+prettyWholeUnit WUWhole = "whole"
+
+prettyClovesUnit :: ClovesUnit -> String
+prettyClovesUnit CUCloves = "cloves"
+
 prettyUnit :: Unit t -> String
 prettyUnit = prettyUnit' . normaliseUnit
   where
-  prettyUnit' Grams = "g"
-  prettyUnit' Litres = "l"
-  prettyUnit' Teaspoons = "tsp"
-  prettyUnit' Tablespoons = "tbsp"
+  prettyUnit' (MU u) = prettyMassUnit u
+  prettyUnit' (VU u) = prettyVolumeUnit u
+  prettyUnit' (WU u) = prettyWholeUnit u
+  prettyUnit' (CU u) = prettyClovesUnit u
   prettyUnit' (Magnify 3 u) = "k" ++ prettyUnit' u
   prettyUnit' (Magnify 6 u) = "g" ++ prettyUnit' u
   prettyUnit' (Magnify (-3) u) = "m" ++ prettyUnit' u
   prettyUnit' (Magnify (-6) u) = "µ" ++ prettyUnit' u
   prettyUnit' (Magnify x u) = prettyUnit' u ++ "×10^" ++ show x
-  prettyUnit' Cloves = "cloves"
-  prettyUnit' Whole = "whole"
 
 prettyMeasure :: Measure t -> String
 prettyMeasure (Measure x u) =
