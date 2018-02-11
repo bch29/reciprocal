@@ -91,7 +91,7 @@ parseMeasureRange = choice
       space
       Some u <- option (Some Whole) parseUnit
       return . Some $ case ar of
-        Left x -> SingleMR (Measure x u)
+        Left x       -> SingleMR (Measure x u)
         Right (x, y) -> RangeMR (Measure x u) (Measure y u)
   , do Some (lower :: Measure t) <- parseMeasure
        higher <- option Nothing $ do
@@ -100,7 +100,7 @@ parseMeasureRange = choice
          return (castMeasure h)
 
        return . Some $ case higher of
-         Just h -> RangeMR lower h
+         Just h  -> RangeMR lower h
          Nothing -> SingleMR lower
   ]
 
@@ -125,7 +125,7 @@ parseAmountRange = do
     Just <$> parseAmount
 
   return $ case higher of
-    Just h -> Right (lower, h)
+    Just h  -> Right (lower, h)
     Nothing -> Left lower
 
 -- parseFraction :: Parser Rational

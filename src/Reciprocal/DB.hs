@@ -1,5 +1,5 @@
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NamedFieldPuns             #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
 module Reciprocal.DB
@@ -20,7 +20,7 @@ import           Reciprocal.Config
 import           Reciprocal.Model.Ingredient
 import           Reciprocal.Model.Recipe
 
-import System.Directory (createDirectoryIfMissing)
+import           System.Directory            (createDirectoryIfMissing)
 
 -- TODO: This is just an abstract interface!
 

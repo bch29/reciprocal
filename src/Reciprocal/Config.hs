@@ -5,10 +5,10 @@
 
 module Reciprocal.Config where
 
-import Reciprocal.Prelude
+import           Reciprocal.Prelude
 
-import System.Environment (getEnv)
-import System.FilePath ((</>))
+import           System.Environment (getEnv)
+import           System.FilePath    ((</>))
 
 -- | The default root directory to store configuration in, relative to the
 -- user's home directory.

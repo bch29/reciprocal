@@ -1,14 +1,14 @@
-{-# LANGUAGE TemplateHaskell        #-}
-{-# LANGUAGE PatternSynonyms        #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Reciprocal.Model.Measure where
 
 import           Reciprocal.Prelude
 
+import           Data.Aeson
+import           Data.Aeson.Types   (typeMismatch)
 import           Data.Ratio         (denominator, numerator)
 import           Type.Class.Higher  (Show1 (..))
-import Data.Aeson
-import Data.Aeson.Types (typeMismatch)
 
 --------------------------------------------------------------------------------
 --  Constants
@@ -204,7 +204,7 @@ addMeasure m1 m2 =
   let Measure a1 u = toStandardMeasure m1
       Measure a2 _ = toStandardMeasure m2
   in Measure (a1 + a2) u
- 
+
 --------------------------------------------------------------------------------
 --  Conversion
 --------------------------------------------------------------------------------

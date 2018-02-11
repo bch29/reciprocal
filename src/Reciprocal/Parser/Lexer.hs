@@ -1,16 +1,16 @@
 module Reciprocal.Parser.Lexer where
 
-import Reciprocal.Prelude
-import Reciprocal.Parser.Core
+import           Reciprocal.Parser.Core
+import           Reciprocal.Prelude
 
-import           Data.Ratio ((%))
+import           Data.Ratio                 ((%))
 
-import qualified Text.URI as URI
+import qualified Text.URI                   as URI
 
-import qualified Data.Char as Char
+import qualified Data.Char                  as Char
 
 import           Text.Megaparsec
-import qualified Text.Megaparsec.Char as C
+import qualified Text.Megaparsec.Char       as C
 import qualified Text.Megaparsec.Char.Lexer as L
 
 --------------------------------------------------------------------------------
@@ -40,12 +40,6 @@ symbol = L.symbol space
 
 startWord :: Parser Char
 startWord = C.letterChar
-
--- anyWord :: Parser Text
--- anyWord = label "any word" $ lexeme $ do
---   firstChar <- startWord
---   rest <- manyTill (C.noneOf sepChars) C.space1
---   return $ (firstChar : rest) ^. packed
 
 -- | Parses text not separated by separator characters or bullet points. Text
 -- may contain arbitrary whitespace (including newlines) within it, but the

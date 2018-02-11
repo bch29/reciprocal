@@ -6,13 +6,13 @@ module Reciprocal.Parser.Recipe.Markdown where
 import           Reciprocal.Prelude
 
 import           Text.Megaparsec
-import           Text.Megaparsec.Error      (parseErrorPretty)
+import           Text.Megaparsec.Error     (parseErrorPretty)
 
 import           Reciprocal.Model.Recipe
 
 import           Reciprocal.Parser.Core
-import           Reciprocal.Parser.Lexer
 import           Reciprocal.Parser.General
+import           Reciprocal.Parser.Lexer
 
 test :: IO ()
 test = do

@@ -1,10 +1,8 @@
-{-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Reciprocal.Model.Recipe where
 
 import           Reciprocal.Prelude
-
-import qualified Text.URI as URI
 
 import           Reciprocal.Model.Duration
 import           Reciprocal.Model.Ingredient

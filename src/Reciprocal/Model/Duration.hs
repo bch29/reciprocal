@@ -7,9 +7,9 @@ module Reciprocal.Model.Duration
   , prettyDuration
   ) where
 
-import Reciprocal.Prelude
+import           Reciprocal.Prelude
 
-import           Text.Show (showString, showParen)
+import           Text.Show          (showParen, showString)
 
 --------------------------------------------------------------------------------
 --  Types
