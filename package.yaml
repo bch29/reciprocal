@@ -33,25 +33,48 @@ dependencies:
   - vector
 
 default-extensions:
+  - BangPatterns
+  - ConstraintKinds
   - DataKinds
+  - DefaultSignatures
   - DeriveAnyClass
-  - DeriveDataTypeable
+  - DeriveFoldable
+  - DeriveFunctor
   - DeriveGeneric
+  - DeriveLift
+  - DeriveTraversable
   - DerivingStrategies
+  - EmptyCase
+  - ExistentialQuantification
+  - FlexibleContexts
   - FlexibleInstances
   - FunctionalDependencies
   - GADTs
   - GeneralizedNewtypeDeriving
+  - InstanceSigs
+  - KindSignatures
+  - LambdaCase
   - MultiParamTypeClasses
+  - MultiWayIf
+  - NamedFieldPuns
+  - OverloadedStrings
+  - PatternSynonyms
   - PolyKinds
+  - RankNTypes
   - ScopedTypeVariables
   - StandaloneDeriving
+  - TupleSections
+  - TypeApplications
   - TypeFamilies
-  - LambdaCase
-  - OverloadedStrings
+  - TypeFamilyDependencies
+  - TypeOperators
 
 ghc-options:
   - -Wall
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
 
 library:
   source-dirs:      src
