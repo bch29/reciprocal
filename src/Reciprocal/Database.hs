@@ -55,19 +55,19 @@ data LoadError
   = MalformedData String
   | NoSuchObject
 
-data Handler a = Handler
+data Handler m a = Handler
   { objectName :: a -> Text
   , rootPath :: FilePath
-  , store :: a -> IO ()
-  , load :: Text -> IO (Either LoadError a)
-  , find :: Text -> Stream IO (Of (Either String a)) ()
+  , store :: a -> m ()
+  , load :: Text -> m (Either LoadError a)
+  , find :: Text -> Stream m (Of (Either String a)) ()
   }
 
 --------------------------------------------------------------------------------
 --  Generic Handlers
 --------------------------------------------------------------------------------
 
-getJsonHandler :: (FromJSON a, ToJSON a) => Text -> (a -> Text) -> Database -> Handler a
+getJsonHandler :: (FromJSON a, ToJSON a) => Text -> (a -> Text) -> Database -> Handler IO a
 getJsonHandler typeName objectName db =
   let rootPath = (db ^. rootDir) </> (typeName ^. unpacked)
   in Handler
@@ -82,10 +82,10 @@ getJsonHandler typeName objectName db =
 --  Specific handlers
 --------------------------------------------------------------------------------
 
-getIngredientHandler :: Database -> Handler Ingredient
+getIngredientHandler :: Database -> Handler IO Ingredient
 getIngredientHandler = getJsonHandler "ingredients" (view name)
 
-getRecipeHandler :: Database -> Handler Recipe
+getRecipeHandler :: Database -> Handler IO Recipe
 getRecipeHandler = getJsonHandler "recipes" (view title)
 
 --------------------------------------------------------------------------------
