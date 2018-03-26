@@ -11,3 +11,6 @@ parseInteger :: Num a => Parser a
 parseInteger = do
   digits <- many digitChar
   return (fromIntegral (read digits :: Integer))
+
+labelT :: (MonadParsec e s m) => Text -> m a -> m a
+labelT = label . view unpacked

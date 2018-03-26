@@ -9,7 +9,7 @@ module Reciprocal.Model.Duration
 
 import           Reciprocal.Prelude
 
-import           Text.Show          (showParen, showString)
+import           Text.Show          (showsPrec, showParen, showString)
 
 --------------------------------------------------------------------------------
 --  Types
@@ -49,7 +49,7 @@ infixl 6 `addDuration`
 addDuration :: Duration -> Duration -> Duration
 addDuration (Hours x) (Hours y) = Hours (x + y)
 
-prettyDuration :: Duration -> String
+prettyDuration :: Duration -> Text
 prettyDuration d =
   let wholeHours = floor (d^._Hours) :: Int
       wholeMinutes = floor (d^._Minutes) :: Int
@@ -58,9 +58,9 @@ prettyDuration d =
       fracSeconds = wholeSeconds - wholeMinutes * 60
   in if fracSeconds == 0
      then if fracMinutes == 0
-          then show wholeHours ++ " h"
-          else show wholeHours ++ " h " ++ show fracMinutes ++ " m"
-     else show wholeHours ++ " h " ++ show fracMinutes ++ " m " ++ show fracSeconds ++ " s"
+          then display wholeHours <> " h"
+          else display wholeHours <> " h " <> display fracMinutes <> " m"
+     else display wholeHours <> " h " <> display fracMinutes <> " m " <> display fracSeconds <> " s"
 
 --------------------------------------------------------------------------------
 --  Internal

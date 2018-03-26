@@ -17,15 +17,13 @@ import Reciprocal.Model.Recipe
 
 import Reciprocal.Config
 import Reciprocal.Database
-
-import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
-import Control.Monad.Reader (ReaderT, runReaderT)
+import qualified Reciprocal.Logging as L
 
 
 data Env m = Env
   { _envIngredientHandler :: Handler m Ingredient
   , _envRecipeHandler :: Handler m Recipe
-  , _envWarningLogger :: String -> m ()
+  , _envLogger :: L.Logger m
   }
 
 makeFields ''Env
@@ -39,7 +37,7 @@ instance MonadTrans Resolve where
 runResolveIO :: Resolve IO a -> Config -> IO a
 runResolveIO action cfg = do
   db <- openDB cfg
-  runReaderT (getResolve action) (Env (getIngredientHandler db) (getRecipeHandler db) putStrLn)
+  runReaderT (getResolve action) (Env (getIngredientHandler db) (getRecipeHandler db) L.stdioLogger)
 
 
 resolveIngredient :: (Monad m) => Text -> Resolve m (Maybe Ingredient)
@@ -54,10 +52,10 @@ resolveIngredient nm = runMaybeT $ do
 
 
 -- TODO: Let user fix it properly
-fixMalformedIngredient :: (Monad m) => String -> Text -> MaybeT (Resolve m) Ingredient
+fixMalformedIngredient :: (Monad m) => Text -> Text -> MaybeT (Resolve m) Ingredient
 fixMalformedIngredient msg nm = do
   lift $ do
-    logWarning $ "malformed ingredient in database: " <> show nm
+    logWarning $ "malformed ingredient in database: " <> display nm
     logWarning msg
   empty
 
@@ -65,7 +63,7 @@ fixMalformedIngredient msg nm = do
 -- TODO: Actually create ingredient
 createIngredient :: (Monad m) => Text -> MaybeT (Resolve m) Ingredient
 createIngredient nm = do
-  lift . logWarning $ "ingredient doesn't exist in the database: " <> show nm
+  lift . logWarning $ "ingredient doesn't exist in the database: " <> display nm
   empty
 
 
@@ -84,7 +82,7 @@ resolveRecipe nm = runMaybeT $ do
 fixMalformedRecipe :: (Monad m) => String -> Text -> MaybeT (Resolve m) Recipe
 fixMalformedRecipe msg nm = do
   lift $ do
-    logWarning $ "malformed recipe in database: " <> show nm
+    logWarning $ "malformed recipe in database: " <> display nm
     logWarning msg
   empty
 
@@ -92,10 +90,10 @@ fixMalformedRecipe msg nm = do
 -- TODO: Actually create recipe
 createRecipe :: (Monad m) => Text -> MaybeT (Resolve m) Recipe
 createRecipe nm = do
-  lift . logWarning $ "recipe doesn't exist in the database: " <> show nm
+  lift . logWarning $ "recipe doesn't exist in the database: " <> display nm
   empty
 
-logWarning :: (Monad m) => String -> Resolve m ()
+logWarning :: (Monad m) => Text -> Resolve m ()
 logWarning msg = do
-  logger <- Resolve (view warningLogger)
-  lift $ logger msg
+  logger <- Resolve (view logger)
+  lift $ L.logWarning logger msg

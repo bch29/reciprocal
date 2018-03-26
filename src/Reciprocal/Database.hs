@@ -52,30 +52,36 @@ openDB cfg = do
   return (Database { _databaseRootDir })
 
 data LoadError
-  = MalformedData String
+  = MalformedData Text
   | NoSuchObject
 
+newtype Key a = Key Text
+
 data Handler m a = Handler
-  { objectName :: a -> Text
+  { objectKey :: a -> Key a
   , rootPath :: FilePath
   , store :: a -> m ()
-  , load :: Text -> m (Either LoadError a)
-  , find :: Text -> Stream m (Of (Either String a)) ()
+  , load :: Key a -> m (Either LoadError a)
+  , find :: Text -> Stream m (Of (Either Text a)) ()
   }
 
 --------------------------------------------------------------------------------
 --  Generic Handlers
 --------------------------------------------------------------------------------
 
-getJsonHandler :: (FromJSON a, ToJSON a) => Text -> (a -> Text) -> Database -> Handler IO a
+getJsonHandler
+    :: (FromJSON a, ToJSON a)
+    => Text -> (a -> Text) -> Database -> Handler IO a
 getJsonHandler typeName objectName db =
   let rootPath = (db ^. rootDir) </> (typeName ^. unpacked)
+      objectKey = Key . view packed . nameToFilename . objectName
   in Handler
-     { objectName
+     { objectKey
      , rootPath
-     , store = \x -> saveJSONUnder rootPath (objectName x) x
+     , store = \x -> saveJSONUnder rootPath (objectKey x) x
      , load = loadJSONFrom rootPath
-     , find = error "Handler.find unimplemented"
+     , find = error $
+       "Handler.find unimplemented for " <> (display typeName ^. unpacked)
      }
 
 --------------------------------------------------------------------------------
@@ -92,17 +98,17 @@ getRecipeHandler = getJsonHandler "recipes" (view title)
 --  Internal
 --------------------------------------------------------------------------------
 
-saveJSONUnder :: (ToJSON a) => FilePath -> Text -> a -> IO ()
-saveJSONUnder path name' x = do
-  let fullPath = path </> nameToFilename name'
+saveJSONUnder :: (ToJSON a) => FilePath -> Key a -> a -> IO ()
+saveJSONUnder path (Key fname) x = do
+  let fullPath = path </> (fname ^. unpacked)
       dat = Aeson.encode x
 
   createDirectoryIfMissing True path
   BS.writeFile fullPath dat
 
-loadJSONFrom :: (FromJSON a) => FilePath -> Text -> IO (Either LoadError a)
-loadJSONFrom path name' = runExceptT $ do
-  let fullPath = path </> nameToFilename name'
+loadJSONFrom :: (FromJSON a) => FilePath -> Key a -> IO (Either LoadError a)
+loadJSONFrom path (Key fname) = runExceptT $ do
+  let fullPath = path </> nameToFilename fname
 
   exists <- liftIO $ foldlM (\x -> fmap (x &&)) True
     [ doesDirectoryExist path
@@ -112,7 +118,7 @@ loadJSONFrom path name' = runExceptT $ do
 
   dat <- liftIO $ BS.readFile fullPath
 
-  either (throwError . MalformedData) return $
+  either (throwError . MalformedData . view packed) return $
     Aeson.eitherDecode dat
 
 
@@ -120,6 +126,3 @@ loadJSONFrom path name' = runExceptT $ do
 -- TODO: Improve this
 nameToFilename :: Text -> FilePath
 nameToFilename = view unpacked
-
--- dbFilePath :: DBName -> IO FilePath
--- dbFilePath (DBName x)

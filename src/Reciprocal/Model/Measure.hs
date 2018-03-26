@@ -10,6 +10,8 @@ import           Data.Aeson.Types   (typeMismatch)
 import           Data.Ratio         (denominator, numerator)
 import           Type.Class.Higher  (Show1 (..))
 
+import           Text.Show
+
 --------------------------------------------------------------------------------
 --  Constants
 --------------------------------------------------------------------------------
@@ -287,37 +289,37 @@ convertMeasureSimple toUnit measure =
 --  Pretty Printing
 --------------------------------------------------------------------------------
 
-prettyMassUnit :: MassUnit -> String
+prettyMassUnit :: MassUnit -> Text
 prettyMassUnit MUGrams = "g"
 
-prettyVolumeUnit :: VolumeUnit -> String
+prettyVolumeUnit :: VolumeUnit -> Text
 prettyVolumeUnit VULitres = "l"
 prettyVolumeUnit VUTeaspoons = "tsp"
 prettyVolumeUnit VUTablespoons = "tbsp"
 
-prettyWholeUnit :: WholeUnit -> String
+prettyWholeUnit :: WholeUnit -> Text
 prettyWholeUnit WUWhole = "whole"
 
-prettyClovesUnit :: ClovesUnit -> String
+prettyClovesUnit :: ClovesUnit -> Text
 prettyClovesUnit CUCloves = "cloves"
 
-prettyUnit :: Unit t -> String
+prettyUnit :: Unit t -> Text
 prettyUnit = prettyUnit' . normaliseUnit
   where
   prettyUnit' (MU u) = prettyMassUnit u
   prettyUnit' (VU u) = prettyVolumeUnit u
   prettyUnit' (WU u) = prettyWholeUnit u
   prettyUnit' (CU u) = prettyClovesUnit u
-  prettyUnit' (Magnify 3 u) = "k" ++ prettyUnit' u
-  prettyUnit' (Magnify 6 u) = "g" ++ prettyUnit' u
-  prettyUnit' (Magnify (-3) u) = "m" ++ prettyUnit' u
-  prettyUnit' (Magnify (-6) u) = "µ" ++ prettyUnit' u
-  prettyUnit' (Magnify x u) = prettyUnit' u ++ "×10^" ++ show x
+  prettyUnit' (Magnify 3 u) = "k" <> prettyUnit' u
+  prettyUnit' (Magnify 6 u) = "g" <> prettyUnit' u
+  prettyUnit' (Magnify (-3) u) = "m" <> prettyUnit' u
+  prettyUnit' (Magnify (-6) u) = "µ" <> prettyUnit' u
+  prettyUnit' (Magnify x u) = prettyUnit' u <> "×10^" <> display x
 
-prettyMeasure :: Measure t -> String
-prettyMeasure (Measure x u) =
-  prettyAmount ++ " " ++ prettyUnit u
-  where prettyAmount =
-          if denominator x == 1
-          then show (numerator x)
-          else show (fromRational x :: Double)
+prettyMeasure :: Measure t -> Text
+prettyMeasure (Measure x u) = prettyAmount <> " " <> prettyUnit u
+  where
+    prettyAmount =
+      if denominator x == 1
+      then display (numerator x)
+      else display (fromRational x :: Double)

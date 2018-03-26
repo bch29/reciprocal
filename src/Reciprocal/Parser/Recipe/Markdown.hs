@@ -17,10 +17,10 @@ import           Reciprocal.Parser.Lexer
 test :: IO ()
 test = do
   let fname = "/home/brad/code/reciprocal/examples/vegan-chili.md"
-  contents :: Text <- view packed <$> readFile fname
+  contents <- readFile fname
 
   case runParser parseRecipe fname contents of
-    Left e  -> putStr (parseErrorPretty e)
+    Left e  -> putStr (parseErrorPretty e ^. packed)
     Right x -> print x
 
 parseRecipe :: Parser Recipe

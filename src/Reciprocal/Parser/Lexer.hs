@@ -108,12 +108,12 @@ restOfSection depth = label "rest of section" $ do
 --------------------------------------------------------------------------------
 
 anyHeading :: Int -> Parser Text
-anyHeading depth = label ("any heading at depth " ++ show depth) $ do
+anyHeading depth = labelT ("any heading at depth " <> display depth) $ do
   headingStart depth
   restOfLine
 
 heading :: Int -> Text -> Parser ()
-heading depth hd = label ("heading at depth " ++ show depth) $ do
+heading depth hd = labelT ("heading at depth " <> display depth) $ do
   headingStart depth
   _ <- symbol hd
   space'

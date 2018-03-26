@@ -9,6 +9,7 @@ module Reciprocal.Prelude
   , module ByteString
   , module Vector
   , URI.URI
+
     -- ** Classes
   , module Typeable
   , module Generics
@@ -23,6 +24,14 @@ module Reciprocal.Prelude
   , module Applicative
   , module Semigroup
 
+    -- * IO
+  , module TextIO
+
+    -- * Monads
+  , ReaderT, runReaderT
+  , MaybeT, runMaybeT
+  , ExceptT, runExceptT
+
     -- * Streaming
   , module Streaming
 
@@ -33,8 +42,34 @@ module Reciprocal.Prelude
   , module Singletons
 
     -- * Other
+  , display
   , Some(..)
+
+    -- * Re-exported from "Prelude"
+  , module BasePrelude
   ) where
+
+--------------------------------------------------------------------------------
+--  Prelude Re-exports
+--------------------------------------------------------------------------------
+
+import Prelude as BasePrelude hiding
+  (
+    -- Purge 'String'!
+    String
+  , putStrLn
+  , putStr
+  , show
+  , showsPrec
+  , showString
+
+  , writeFile
+  , readFile
+  , appendFile
+  , getContents
+  , getLine
+  , interact
+  )
 
 --------------------------------------------------------------------------------
 --  Data
@@ -66,6 +101,20 @@ import Control.Applicative as Applicative (Alternative(..))
 import Data.Semigroup as Semigroup (Semigroup(..))
 
 --------------------------------------------------------------------------------
+--  IO
+--------------------------------------------------------------------------------
+
+import Data.Text.IO as TextIO
+
+--------------------------------------------------------------------------------
+--  Monads
+--------------------------------------------------------------------------------
+
+import Control.Monad.Trans.Reader (ReaderT, runReaderT)
+import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
+import Control.Monad.Trans.Except (ExceptT, runExceptT)
+
+--------------------------------------------------------------------------------
 --  Streaming
 --------------------------------------------------------------------------------
 
@@ -94,6 +143,12 @@ import Type.Class.Higher (Show1(..))
 --------------------------------------------------------------------------------
 --  Other
 --------------------------------------------------------------------------------
+
+import Text.Show (show, showsPrec, showString)
+
+-- | Regular 'show' except it outputs 'Text'.
+display :: Show a => a -> Text
+display = view packed . show
 
 data Some k where
   Some :: Typeable a => k a -> Some k
