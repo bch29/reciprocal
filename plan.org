@@ -48,4 +48,56 @@
 
 ** Money
 
+* Interaction
 
+** Add a recipe
+
+Must:
+- let the user specify a recipe to start from, either from the database or
+  from a URL; then edit the result
+- let the user create a recipe entirely from scratch
+- upon saving, warn if any ingredients aren't in the database and give the
+  option to rectify (either by clarifying an ingredient in the DB under a
+  different name, or adding a new ingredient to the DB)
+
+Could:
+- display macros in the recipe
+
+** Browse recipes
+
+Must:
+- give the option to search and refine search terms
+- display important information inline
+- give the option to view recipes (i.e. switch to the 'viewRecipe' interaction)
+
+Could:
+- allow results to be sorted according to different criteria
+- let recipes be added directly to meal plans
+- indicate when recipes are already in upcoming meal plans
+
+** Plan meals
+
+Should:
+- if meal plans already exist for any period overlapping the given period,
+  those should be edited by this interaction
+- give the option to collate a shopping list for the given period
+- provide an easy interface to finding recipes (via 'browseRecipes')
+- provide an easy interface to creating new recipes
+- split days into breakfast, lunch, dinner, snacks; warn if breakfast,
+  lunch or dinner are unplanned
+
+Could:
+- display macros for each day
+
+** Export shopping lists
+
+Should:
+- collect ingredients from the meal plan and add up quantities of each
+- for each ingredient, ask the user if they already have enough; if not, add it to the list
+- when showing each ingredient, the user might realise it's a duplicate; in this case, give option to deduplicate, then ask again whether they have enough
+- display the resulting shopping list organised by categories
+- give the option to export to plain text
+
+Could:
+- save directly to icloud notes
+- give the option to export to an app
