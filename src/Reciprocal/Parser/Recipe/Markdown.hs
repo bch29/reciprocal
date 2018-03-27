@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Reciprocal.Parser.Recipe.Markdown where
 
-import           Reciprocal.Prelude
+import           Reciprocal.Prelude hiding (many, some)
 
 import           Text.Megaparsec
 import           Text.Megaparsec.Error     (parseErrorPretty)

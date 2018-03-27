@@ -1,6 +1,6 @@
 module Reciprocal.Parser.Core where
 
-import           Reciprocal.Prelude
+import           Reciprocal.Prelude hiding (many)
 
 import           Text.Megaparsec
 import           Text.Megaparsec.Char

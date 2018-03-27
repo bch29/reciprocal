@@ -1,9 +1,4 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DefaultSignatures          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE NamedFieldPuns             #-}
 {-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeApplications           #-}
 
 module Reciprocal.Database
   (
@@ -33,10 +28,12 @@ import           System.Directory            (createDirectoryIfMissing,
                                               doesDirectoryExist, doesFileExist)
 import           System.FilePath             ((</>))
 
-import           Control.Monad.Except        (runExceptT, throwError)
+import           Control.Monad.Except        (ExceptT(..), runExceptT, throwError)
 import           Data.Foldable               (foldlM)
 
--- TODO: Searching functions
+import qualified Data.Conduit.Combinators as Conduit
+import qualified Streaming.Prelude as S
+
 
 data Database = Database
   { _databaseRootDir :: FilePath
@@ -60,10 +57,10 @@ newtype Key a = Key Text
 
 data Handler m a = Handler
   { objectKey :: a -> Key a
-  , rootPath :: FilePath
-  , store :: a -> m ()
-  , load :: Key a -> m (Either LoadError a)
-  , find :: Text -> Stream (Of (Either Text a)) m ()
+  , rootPath  :: FilePath
+  , store     :: a -> m ()
+  , load      :: Key a -> m (Either LoadError a)
+  , find      :: Text -> Stream (Of a) m ()
   }
 
 --------------------------------------------------------------------------------
@@ -71,28 +68,27 @@ data Handler m a = Handler
 --------------------------------------------------------------------------------
 
 getJsonHandler
-    :: (FromJSON a, ToJSON a)
-    => Text -> (a -> Text) -> Database -> Handler IO a
+    :: (FromJSON a, ToJSON a, MonadResource m)
+    => Text -> (a -> Text) -> Database -> Handler m a
 getJsonHandler typeName objectName db =
   let rootPath = (db ^. rootDir) </> (typeName ^. unpacked)
       objectKey = Key . view packed . nameToFilename . objectName
   in Handler
      { objectKey
      , rootPath
-     , store = \x -> saveJSONUnder rootPath (objectKey x) x
-     , load = loadJSONFrom rootPath
-     , find = error $
-       "Handler.find unimplemented for " <> (display typeName ^. unpacked)
+     , store = \x -> liftIO $ saveJSONUnder rootPath (objectKey x) x
+     , load = liftIO . loadJSONFrom rootPath
+     , find = findByTitle rootPath objectName
      }
 
 --------------------------------------------------------------------------------
 --  Specific handlers
 --------------------------------------------------------------------------------
 
-getIngredientHandler :: Database -> Handler IO Ingredient
+getIngredientHandler :: (MonadResource m) => Database -> Handler m Ingredient
 getIngredientHandler = getJsonHandler "ingredients" (view name)
 
-getRecipeHandler :: Database -> Handler IO Recipe
+getRecipeHandler :: (MonadResource m) => Database -> Handler m Recipe
 getRecipeHandler = getJsonHandler "recipes" (view title)
 
 --------------------------------------------------------------------------------
@@ -117,11 +113,36 @@ loadJSONFrom path (Key fname) = runExceptT $ do
     ]
   unless exists $ throwError NoSuchObject
 
-  dat <- liftIO $ BS.readFile fullPath
+  ExceptT $ loadJSONSimple fullPath
+
+loadJSONSimple :: (FromJSON a) => FilePath -> IO (Either LoadError a)
+loadJSONSimple path = runExceptT $ do
+  dat <- liftIO $ BS.readFile path
 
   either (throwError . MalformedData . view packed) return $
     Aeson.eitherDecode dat
 
+
+-- TODO: search by something better than exact match
+findByTitle
+  :: forall m a. (FromJSON a, MonadResource m)
+  => FilePath -> (a -> Text)
+  -> Text -> Stream (Of a) m ()
+findByTitle path objectTitle searchTerm =
+  let files = conduitToStream $ Conduit.sourceDirectory path
+
+      testFile :: FilePath -> m (Maybe a)
+      testFile fp = do
+        eobj <- liftIO $ loadJSONSimple fp
+        case eobj of
+          Left _ -> return Nothing
+          Right x -> do
+            let tit = objectTitle x
+            return $ if tit == searchTerm
+                     then Just x
+                     else Nothing
+
+  in S.mapMaybeM testFile files
 
 
 -- TODO: Improve this

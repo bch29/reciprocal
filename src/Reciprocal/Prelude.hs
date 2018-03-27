@@ -35,6 +35,14 @@ module Reciprocal.Prelude
 
     -- * Streaming
   , module Streaming
+  , ConduitT
+
+  -- ** Conduits
+  , MonadResource, ResourceT, runResourceT, MonadUnliftIO
+  , streamToConduit, conduitToStream
+
+  -- , pipeToStream
+  -- , streamToPipe
 
     -- * Lens
   , module Lens
@@ -95,7 +103,7 @@ import qualified Data.Aeson as Aeson
 --  Combinators
 --------------------------------------------------------------------------------
 
-import Control.Monad as Monad (void, guard, when, unless)
+import Control.Monad as Monad (void, guard, when, unless, join)
 import Control.Monad.IO.Class as MonadIO (MonadIO(liftIO))
 import Control.Monad.Trans.Class as MonadTrans (MonadTrans(..))
 import Control.Applicative as Applicative (Alternative(..))
@@ -121,6 +129,12 @@ import Control.Monad.State.Class (MonadState)
 --------------------------------------------------------------------------------
 
 import Streaming (Stream, Of(..))
+import Conduit (ConduitT)
+import Control.Monad.Trans.Resource
+  ( ResourceT
+  , MonadResource
+  , runResourceT
+  , MonadUnliftIO)
 
 --------------------------------------------------------------------------------
 --  Lens
@@ -141,6 +155,9 @@ import Data.Singletons as Singletons (SingI(..), Sing(..))
 --------------------------------------------------------------------------------
 
 import Type.Class.Higher (Show1(..))
+import qualified Conduit as Conduit
+import qualified Streaming.Prelude as Streaming
+import qualified Streaming as Streaming
 
 --------------------------------------------------------------------------------
 --  Other
@@ -169,3 +186,40 @@ instance Aeson.FromJSON URI.URI where
     case URI.mkURI txt of
       Just r -> return r
       Nothing -> fail $ "Invalid URI " <> show txt
+
+
+conduitToStream :: (Monad m) => ConduitT () a m () -> Stream (Of a) m ()
+conduitToStream = Streaming.unfoldr next . Conduit.sealConduitT
+  where
+    next
+      :: (Monad m)
+      => Conduit.SealedConduitT () a m ()
+      -> m (Either () (a, Conduit.SealedConduitT () a m ()))
+    next c = do
+      (c', mx) <- c Conduit.$$++ Conduit.await
+      case mx of
+        Just x -> return (Right (x, c'))
+        Nothing -> return (Left ())
+
+
+streamToConduit :: (Monad m) => Stream (Of a) m r -> ConduitT i a m r
+streamToConduit = Streaming.foldrT (\a p -> Conduit.yield a >> p)
+
+-- pipeToStream :: (Monad m) => Pipes.Producer a m r -> Stream (Of a) m r
+-- pipeToStream = Streaming.unfoldr Pipes.next
+
+
+-- streamToPipe :: (Monad m) => Stream (Of a) m r -> Pipes.Producer a m r
+-- streamToPipe = Streaming.foldrT (\a p -> Pipes.yield a >> p)
+
+
+-- streamToEffect :: (Monad m) => Stream Identity m r -> Pipes.Effect' m r
+-- streamToEffect = lift . Streaming.iterT runIdentity
+
+
+-- effectToStream :: (Monad m, Functor f) => Pipes.Effect m r -> Stream f m r
+-- effectToStream = lift . Pipes.runEffect
+
+
+-- runSafeS :: (MonadMask m, MonadIO m, Functor f) => Stream Identity (SafeT m) r -> Stream f m r
+-- runSafeS = effectToStream . Pipes.runSafeP . streamToEffect

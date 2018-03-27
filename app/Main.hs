@@ -1,7 +1,10 @@
 module Main where
 
--- import Reciprocal.Prelude
--- import Reciprocal.Config
+import Reciprocal.Prelude
+import Reciprocal.Config
+import Reciprocal.Frontend.Terminal
 
 main :: IO ()
-main = error "Unimplemented"
+main = do
+  conf <- defaultConfig
+  run conf

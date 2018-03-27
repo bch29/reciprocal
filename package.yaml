@@ -14,23 +14,28 @@ extra-source-files:
 dependencies:
   - base >= 4.7 && < 5
   - aeson
+  - brick >= 0.34
   - bytestring
   - containers
   - directory
+  - exceptions
   - filepath
   - hashable
   - lens
   - megaparsec >= 6.0
   - modern-uri
   - mtl
-  - transformers
   - parser-combinators >= 0.4
+  - conduit
+  - resourcet
   - singletons
   - streaming
   - text
   - time
+  - transformers
   - type-combinators
   - vector
+  - vty
 
 default-extensions:
   - BangPatterns

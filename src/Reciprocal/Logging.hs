@@ -16,9 +16,9 @@ data Logger m = Logger
   { loggerWarning :: Text -> m ()
   }
 
-stdioLogger :: Logger IO
+stdioLogger :: (MonadIO m) => Logger m
 stdioLogger = Logger
-  { loggerWarning = putStrLn
+  { loggerWarning = liftIO . putStrLn
   }
 
 logWarning :: Logger m -> Text -> m ()

@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeFamilies        #-}
 module Reciprocal.Parser.General where
 
-import           Reciprocal.Prelude
+import           Reciprocal.Prelude         hiding (many, some)
 
 import           Text.Megaparsec
 

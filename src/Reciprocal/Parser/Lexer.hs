@@ -1,7 +1,7 @@
 module Reciprocal.Parser.Lexer where
 
 import           Reciprocal.Parser.Core
-import           Reciprocal.Prelude
+import           Reciprocal.Prelude         hiding (many, some)
 
 import           Data.Ratio                 ((%))
 
