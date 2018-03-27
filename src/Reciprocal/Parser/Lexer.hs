@@ -48,13 +48,13 @@ startWord = C.letterChar
 -- single space.
 unseparatedText :: Parser Text
 unseparatedText = label "unseparated text" $
-  normalizingWhitespace (C.alphaNumChar <|> C.oneOf ("'\"()" :: String))
+  normalizingWhitespace (C.alphaNumChar <|> C.oneOf ("'\"()" :: [Char]))
 
 textInBullet :: Char -> Parser Text
 textInBullet _ = label "body of a bullet point" . normalizingWhitespace $
   choice
   [ C.alphaNumChar
-  , C.oneOf ("'\"();,:/." :: String)
+  , C.oneOf ("'\"();,:/." :: [Char])
   , C.oneOf bulletChars <* notFollowedBy (try endline)
   ]
 

@@ -11,6 +11,7 @@ module Reciprocal.Database
     Database
   , LoadError(..)
   , Handler(..)
+  , Key
 
     -- * Opening a 'Database'
   , openDB
@@ -62,7 +63,7 @@ data Handler m a = Handler
   , rootPath :: FilePath
   , store :: a -> m ()
   , load :: Key a -> m (Either LoadError a)
-  , find :: Text -> Stream m (Of (Either Text a)) ()
+  , find :: Text -> Stream (Of (Either Text a)) m ()
   }
 
 --------------------------------------------------------------------------------

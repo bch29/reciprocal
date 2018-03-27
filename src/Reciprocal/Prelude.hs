@@ -31,6 +31,7 @@ module Reciprocal.Prelude
   , ReaderT, runReaderT
   , MaybeT, runMaybeT
   , ExceptT, runExceptT
+  , MonadReader, MonadError, MonadState
 
     -- * Streaming
   , module Streaming
@@ -110,9 +111,10 @@ import Data.Text.IO as TextIO
 --  Monads
 --------------------------------------------------------------------------------
 
-import Control.Monad.Trans.Reader (ReaderT, runReaderT)
+import Control.Monad.Reader (ReaderT, runReaderT, MonadReader)
 import Control.Monad.Trans.Maybe (MaybeT, runMaybeT)
-import Control.Monad.Trans.Except (ExceptT, runExceptT)
+import Control.Monad.Except (ExceptT, runExceptT, MonadError)
+import Control.Monad.State.Class (MonadState)
 
 --------------------------------------------------------------------------------
 --  Streaming
