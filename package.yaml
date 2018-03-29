@@ -81,10 +81,23 @@ ghc-options:
   - -Wincomplete-record-updates
   - -Wincomplete-uni-patterns
   - -Wredundant-constraints
+  - -optP-Wno-nonportable-include-path
 
 library:
   source-dirs:      src
 
+# test:
+#   source-dirs: test
+#   dependencies:
+#     - reciprocal
+#     - HUnit
+#     - HSpec
+#     - quickcheck
+
 executable:
   source-dirs: app
   main: Main.hs
+  dependencies:
+    - reciprocal
+  ghc-options:
+    - -threaded

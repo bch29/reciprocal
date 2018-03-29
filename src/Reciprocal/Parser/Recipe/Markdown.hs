@@ -16,7 +16,7 @@ import           Reciprocal.Parser.Lexer
 
 test :: IO ()
 test = do
-  let fname = "/home/brad/code/reciprocal/examples/vegan-chili.md"
+  let fname = "/Users/brad/code/reciprocal/examples/vegan-chili.md"
   contents <- readFile fname
 
   case runParser parseRecipe fname contents of

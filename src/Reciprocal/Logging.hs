@@ -6,6 +6,7 @@ module Reciprocal.Logging
   , logWarning
   -- * Concrete loggers
   , stdioLogger
+  , fileLogger
   ) where
 
 import Reciprocal.Prelude
@@ -20,6 +21,13 @@ stdioLogger :: (MonadIO m) => Logger m
 stdioLogger = Logger
   { loggerWarning = liftIO . putStrLn
   }
+
+fileLogger :: (MonadIO m) => FilePath -> IO (Logger m)
+fileLogger logFile = do
+  writeFile logFile ""
+  return $ Logger
+    { loggerWarning = liftIO . appendFile logFile . (<> "\n")
+    }
 
 logWarning :: Logger m -> Text -> m ()
 logWarning = loggerWarning

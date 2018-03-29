@@ -3,12 +3,12 @@
 {-|
 Resolving parts of recipes using items in the database.
 -}
-module Reciprocal.Resolution.Recipe where
-  -- ( Resolve
-  -- , runResolveIO
-  -- , resolveIngredient
-  -- , resolveRecipe
-  -- ) where
+module Reciprocal.Resolution.Recipe
+  ( Resolve
+  , runResolveIO
+  , resolveIngredient
+  , resolveRecipe
+  ) where
 
 import Reciprocal.Prelude
 
@@ -19,6 +19,8 @@ import Reciprocal.Config
 import Reciprocal.Database
 import qualified Reciprocal.Logging as L
 
+import qualified Streaming.Prelude as S
+
 
 data Env m = Env
   { _envIngredientHandler :: Handler m Ingredient
@@ -28,72 +30,54 @@ data Env m = Env
 
 makeFields ''Env
 
--- newtype Resolve m a = Resolve { getResolve :: ReaderT (Env m) m a }
---   deriving newtype (Functor, Applicative, Monad)
+newtype Resolve m a = Resolve { getResolve :: ReaderT (Env m) m a }
+  deriving newtype (Functor, Applicative, Monad)
 
--- instance MonadTrans Resolve where
---   lift = Resolve . lift
+instance MonadTrans Resolve where
+  lift = Resolve . lift
 
--- runResolveIO :: Resolve IO a -> Config -> IO a
--- runResolveIO action cfg = do
---   db <- openDB cfg
---   runReaderT (getResolve action) (Env (getIngredientHandler db) (getRecipeHandler db) L.stdioLogger)
-
-
--- resolveIngredient :: (Monad m) => Text -> Resolve m (Maybe Ingredient)
--- resolveIngredient nm = runMaybeT $ do
---   ih <- lift . Resolve $ view ingredientHandler
---   fromDb <- lift . lift $ load ih nm
-
---   case fromDb of
---     Left (MalformedData msg) -> fixMalformedIngredient msg nm
---     Left NoSuchObject -> createIngredient nm
---     Right x -> return x
+runResolveIO :: Resolve (ResourceT IO) a -> Config -> IO a
+runResolveIO action cfg = do
+  db <- openDB cfg
+  runResourceT $ runReaderT
+    (getResolve action)
+    (Env (getIngredientHandler db) (getRecipeHandler db) L.stdioLogger)
 
 
--- -- TODO: Let user fix it properly
--- fixMalformedIngredient :: (Monad m) => Text -> Text -> MaybeT (Resolve m) Ingredient
--- fixMalformedIngredient msg nm = do
---   lift $ do
---     logWarning $ "malformed ingredient in database: " <> display nm
---     logWarning msg
---   empty
+resolveIngredient :: (Monad m) => Text -> Resolve m (Maybe Ingredient)
+resolveIngredient nm = runMaybeT $ do
+  ih <- lift . Resolve $ view ingredientHandler
+  findRes <- lift . lift $ S.next (find ih nm)
+
+  case findRes of
+    Left () -> createIngredient nm
+    Right (x, _) -> return x
 
 
--- -- TODO: Actually create ingredient
--- createIngredient :: (Monad m) => Text -> MaybeT (Resolve m) Ingredient
--- createIngredient nm = do
---   lift . logWarning $ "ingredient doesn't exist in the database: " <> display nm
---   empty
+-- TODO: Actually create ingredient
+createIngredient :: (Monad m) => Text -> MaybeT (Resolve m) Ingredient
+createIngredient nm = do
+  lift . logWarning $ "ingredient doesn't exist in the database: " <> display nm
+  empty
 
 
--- resolveRecipe :: (Monad m) => Key Recipe -> Resolve m (Maybe Recipe)
--- resolveRecipe key = runMaybeT $ do
---   rh <- lift . Resolve $ view recipeHandler
---   fromDb <- lift . lift $ load rh key
+resolveRecipe :: (Monad m) => Text -> Resolve m (Maybe Recipe)
+resolveRecipe nm = runMaybeT $ do
+  rh <- lift . Resolve $ view recipeHandler
+  findRes <- lift . lift $ S.next (find rh nm)
 
---   case fromDb of
---     Left (MalformedData msg) -> fixMalformedRecipe msg nm
---     Left NoSuchObject -> createRecipe nm
---     Right x -> return x
-
-
--- -- TODO: Let user fix it properly
--- fixMalformedRecipe :: (Monad m) => Text -> Text -> MaybeT (Resolve m) Recipe
--- fixMalformedRecipe msg nm = do
---   lift $ do
---     logWarning $ "malformed recipe in database: " <> display nm
---     logWarning msg
---   empty
+  case findRes of
+    Left () -> createRecipe nm
+    Right (x, _) -> return x
 
 
--- -- TODO: Actually create recipe
--- createRecipe :: (Monad m) => Text -> MaybeT (Resolve m) Recipe
--- createRecipe nm = do
---   lift . logWarning $ "recipe doesn't exist in the database: " <> display nm
---   empty
+-- TODO: Actually create recipe
+createRecipe :: (Monad m) => Text -> MaybeT (Resolve m) Recipe
+createRecipe nm = do
+  lift . logWarning $ "recipe doesn't exist in the database: " <> display nm
+  empty
 
--- logWarning :: (Monad m) => Text -> Resolve m ()
--- logWarning msg = do
---   logger <- Resolve (view logger)
---   lift $ L.logWarning logger msg
+logWarning :: (Monad m) => Text -> Resolve m ()
+logWarning msg = do
+  lg <- Resolve (view logger)
+  lift $ L.logWarning lg msg

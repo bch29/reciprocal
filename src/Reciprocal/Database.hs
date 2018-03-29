@@ -105,7 +105,7 @@ saveJSONUnder path (Key fname) x = do
 
 loadJSONFrom :: (FromJSON a) => FilePath -> Key a -> IO (Either LoadError a)
 loadJSONFrom path (Key fname) = runExceptT $ do
-  let fullPath = path </> nameToFilename fname
+  let fullPath = path </> (fname ^. unpacked)
 
   exists <- liftIO $ foldlM (\x -> fmap (x &&)) True
     [ doesDirectoryExist path
@@ -147,4 +147,4 @@ findByTitle path objectTitle searchTerm =
 
 -- TODO: Improve this
 nameToFilename :: Text -> FilePath
-nameToFilename = view unpacked
+nameToFilename n = (n ^. unpacked) ++ ".json"

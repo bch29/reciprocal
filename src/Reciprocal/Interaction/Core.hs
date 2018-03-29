@@ -8,7 +8,7 @@ import Reciprocal.Prelude
 import Reciprocal.Database
 import Reciprocal.Model.Recipe
 import Reciprocal.Model.Ingredient
-import Reciprocal.Logging
+import qualified Reciprocal.Logging as L
 
 --------------------------------------------------------------------------------
 --  Main Types
@@ -17,7 +17,7 @@ import Reciprocal.Logging
 data Env m = Env
   { _envRecipeHandler :: Handler m Recipe
   , _envIngredientHandler :: Handler m Ingredient
-  , _envLogger :: Logger m
+  , _envLogger :: L.Logger m
   }
 
 newtype Interaction m a = Interaction
@@ -84,3 +84,8 @@ makeFields ''ListShoppingView
 --------------------------------------------------------------------------------
 --  Combinators
 --------------------------------------------------------------------------------
+
+logWarning :: (Monad m) => Text -> Interaction m ()
+logWarning msg = do
+  lg <- view logger
+  lift $ L.logWarning lg msg

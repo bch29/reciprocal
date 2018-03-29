@@ -23,6 +23,7 @@ module Reciprocal.Prelude
   , module MonadTrans
   , module Applicative
   , module Semigroup
+  , module Foldable
 
     -- * IO
   , module TextIO
@@ -108,6 +109,7 @@ import Control.Monad.IO.Class as MonadIO (MonadIO(liftIO))
 import Control.Monad.Trans.Class as MonadTrans (MonadTrans(..))
 import Control.Applicative as Applicative (Alternative(..))
 import Data.Semigroup as Semigroup (Semigroup(..))
+import Data.Foldable as Foldable (traverse_)
 
 --------------------------------------------------------------------------------
 --  IO

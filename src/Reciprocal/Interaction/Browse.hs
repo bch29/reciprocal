@@ -5,7 +5,6 @@ import Reciprocal.Prelude
 import Reciprocal.Interaction.Core
 import Reciprocal.Model.Recipe
 import Reciprocal.Database
-import Reciprocal.Logging
 import Reciprocal.Interaction.Recipe
 
 import qualified Streaming.Prelude as S
@@ -21,11 +20,12 @@ initialBrowseView = return $ BrowseView
 updateSearchTerm :: (Monad m) => Text -> BrowseView -> Interaction m BrowseView
 updateSearchTerm newSearch browseView = do
   rhandler <- view recipeHandler
-  -- lg <- view logger
+  logWarning $ "Updating search term to " <> display newSearch
 
   let resStream = find rhandler newSearch
 
   results :> _ <- lift $ S.toList resStream
+  logWarning $ "Got " <> display (length results) <> " results"
 
   return (browseView & recipes .~ results & searchTerm .~ newSearch)
 
@@ -33,15 +33,14 @@ updateSearchTerm newSearch browseView = do
 selectRecipe :: (Monad m) => Key Recipe -> BrowseView -> Interaction m (Maybe RecipeView)
 selectRecipe key _ = do
   rhandler <- view recipeHandler
-  lg <- view logger
 
   mrecipe <- lift $ load rhandler key
   case mrecipe of
     Left NoSuchObject -> do
-      lift $ logWarning lg "can't find that recipe!"
+      logWarning $ "can't find that recipe!"
       return Nothing
     Left (MalformedData err) -> do
-      lift $ logWarning lg err
+      logWarning err
       return Nothing
 
     Right r -> Just <$> viewRecipe r
