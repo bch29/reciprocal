@@ -4,7 +4,7 @@ module Reciprocal.Database
     Database
   , LoadError(..)
   , Handler(..)
-  , Key
+  , Key(..)
 
     -- * Opening a 'Database'
   , openDB
@@ -49,8 +49,9 @@ openDB cfg = do
 data LoadError
   = MalformedData Text
   | NoSuchObject
+  deriving (Generic, Show)
 
-newtype Key a = Key Text
+newtype Key a = UnsafeMkKey Text
 
 data Handler m a = Handler
   { objectKey :: a -> Key a
@@ -69,7 +70,7 @@ getJsonHandler
     => Text -> (a -> Text) -> Database -> Handler m a
 getJsonHandler typeName objectName db =
   let rootPath = (db ^. field @"rootDir") </> (typeName ^. unpacked)
-      objectKey = Key . view packed . nameToFilename . objectName
+      objectKey = UnsafeMkKey . view packed . nameToFilename . objectName
   in Handler
      { objectKey
      , rootPath
@@ -93,7 +94,7 @@ getRecipeHandler = getJsonHandler "recipes" (view (field @"title"))
 --------------------------------------------------------------------------------
 
 saveJSONUnder :: (ToJSON a) => FilePath -> Key a -> a -> IO ()
-saveJSONUnder path (Key fname) x = do
+saveJSONUnder path (UnsafeMkKey fname) x = do
   let fullPath = path </> (fname ^. unpacked)
       dat = Aeson.encode x
 
@@ -101,7 +102,7 @@ saveJSONUnder path (Key fname) x = do
   BS.writeFile fullPath dat
 
 loadJSONFrom :: (FromJSON a) => FilePath -> Key a -> IO (Either LoadError a)
-loadJSONFrom path (Key fname) = runExceptT $ do
+loadJSONFrom path (UnsafeMkKey fname) = runExceptT $ do
   let fullPath = path </> (fname ^. unpacked)
 
   exists <- liftIO $ foldlM (\x -> fmap (x &&)) True

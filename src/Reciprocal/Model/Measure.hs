@@ -144,8 +144,8 @@ instance FromJSON (Some Unit) where
 
 instance FromJSON (Some Measure) where
   parseJSON = withObject "Some Measure" $ \v ->
-    do Some u <- v .: "_measureUnit"
-       fmap Some $ Measure <$> v .: "_measureAmount" <*> pure u
+    do Some u <- v .: "unit"
+       fmap Some $ Measure <$> v .: "amount" <*> pure u
 
 instance FromJSON (Some MeasureRange) where
   parseJSON = withObject "Some MeasureRange" $ \v ->
