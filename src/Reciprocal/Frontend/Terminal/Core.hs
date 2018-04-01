@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Reciprocal.Frontend.Terminal.Core where
 
 import           Reciprocal.Prelude
@@ -19,24 +17,21 @@ import qualified Brick.Widgets.List            as WL
 data Name
   = BrowseViewList
   | BrowseViewSearchBox
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Generic)
 
 data Event = Event
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show, Generic)
 
 data StateBrowsing = StateBrowsing
-  { _stateBrowsingBrowseView :: BrowseView
-  , _stateBrowsingIsTyping   :: Bool
-  , _stateBrowsingBrowseList :: WL.List Name Recipe
-  , _stateBrowsingSearchBox  :: WE.Editor Text Name
+  { browseView :: BrowseView
+  , isTyping   :: Bool
+  , browseList :: WL.List Name Recipe
+  , searchBox  :: WE.Editor Text Name
   }
-  deriving (Show)
+  deriving (Show, Generic)
 
 data State = SBrowsing StateBrowsing
-  deriving (Show)
-
-makeFields ''StateBrowsing
-makePrisms ''State
+  deriving (Show, Generic)
 
 --------------------------------------------------------------------------------
 --  Util

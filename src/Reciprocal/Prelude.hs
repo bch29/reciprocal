@@ -142,7 +142,30 @@ import Control.Monad.Trans.Resource
 --  Lens
 --------------------------------------------------------------------------------
 
-import Control.Lens as Lens hiding ((:>))
+import Control.Lens.At as Lens
+-- import Control.Lens.Cons as Lens
+import Control.Lens.Each as Lens
+import Control.Lens.Empty as Lens
+import Control.Lens.Equality as Lens
+import Control.Lens.Fold as Lens
+import Control.Lens.Getter as Lens
+import Control.Lens.Indexed as Lens
+import Control.Lens.Iso as Lens
+import Control.Lens.Lens as Lens
+import Control.Lens.Level as Lens
+import Control.Lens.Plated as Lens
+import Control.Lens.Prism as Lens
+import Control.Lens.Reified as Lens
+import Control.Lens.Review as Lens
+import Control.Lens.Setter as Lens
+import Control.Lens.Traversal as Lens
+import Control.Lens.Tuple as Lens
+import Control.Lens.Type as Lens
+import Control.Lens.Wrapped as Lens
+import Control.Lens.Zoom as Lens
+
+import Data.Generics.Product.Fields as Lens
+import Data.Generics.Sum.Constructors as Lens
 import Data.Text.Lens as Lens
 import Data.ByteString.Lens as Lens
 

@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 {-|
 Resolving parts of recipes using items in the database.
 -}
@@ -23,12 +21,11 @@ import qualified Streaming.Prelude as S
 
 
 data Env m = Env
-  { _envIngredientHandler :: Handler m Ingredient
-  , _envRecipeHandler :: Handler m Recipe
-  , _envLogger :: L.Logger m
+  { ingredientHandler :: Handler m Ingredient
+  , recipeHandler :: Handler m Recipe
+  , logger :: L.Logger m
   }
-
-makeFields ''Env
+  deriving (Generic)
 
 newtype Resolve m a = Resolve { getResolve :: ReaderT (Env m) m a }
   deriving newtype (Functor, Applicative, Monad)
@@ -40,13 +37,16 @@ runResolveIO :: Resolve (ResourceT IO) a -> Config -> IO a
 runResolveIO action cfg = do
   db <- openDB cfg
   runResourceT $ runReaderT
-    (getResolve action)
-    (Env (getIngredientHandler db) (getRecipeHandler db) L.stdioLogger)
+    (getResolve action) $ Env
+    { ingredientHandler = getIngredientHandler db
+    , recipeHandler = getRecipeHandler db
+    , logger =L.stdioLogger
+    }
 
 
 resolveIngredient :: (Monad m) => Text -> Resolve m (Maybe Ingredient)
 resolveIngredient nm = runMaybeT $ do
-  ih <- lift . Resolve $ view ingredientHandler
+  ih <- lift . Resolve $ view (field @"ingredientHandler")
   findRes <- lift . lift $ S.next (find ih nm)
 
   case findRes of
@@ -63,7 +63,7 @@ createIngredient nm = do
 
 resolveRecipe :: (Monad m) => Text -> Resolve m (Maybe Recipe)
 resolveRecipe nm = runMaybeT $ do
-  rh <- lift . Resolve $ view recipeHandler
+  rh <- lift . Resolve $ view (field @"recipeHandler")
   findRes <- lift . lift $ S.next (find rh nm)
 
   case findRes of
@@ -79,5 +79,5 @@ createRecipe nm = do
 
 logWarning :: (Monad m) => Text -> Resolve m ()
 logWarning msg = do
-  lg <- Resolve (view logger)
+  lg <- Resolve (view (field @"logger"))
   lift $ L.logWarning lg msg

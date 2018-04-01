@@ -1,8 +1,3 @@
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TemplateHaskell        #-}
-
 module Reciprocal.Config where
 
 import           Reciprocal.Prelude
@@ -17,12 +12,9 @@ defaultRootDir = ".config/reciprocal"
 
 
 data Config = Config
-  { _configRootDir :: FilePath
+  { rootDir :: FilePath
   }
-
-
-
-makeFields ''Config
+  deriving (Generic)
 
 
 defaultConfig :: IO Config
@@ -30,5 +22,5 @@ defaultConfig = do
   homeDir <- getEnv "HOME"
 
   return $ Config
-    { _configRootDir = homeDir </> defaultRootDir
+    { rootDir = homeDir </> defaultRootDir
     }

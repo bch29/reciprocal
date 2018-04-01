@@ -1,6 +1,4 @@
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Reciprocal.Model.Measure where
 
 import           Reciprocal.Prelude
@@ -34,8 +32,8 @@ data MeasureRange t
 
 data Measure (t :: UnitType)
   = Measure
-  { _measureAmount :: Rational
-  , _measureUnit   :: Unit t
+  { amount :: Rational
+  , unit   :: Unit t
   }
   deriving (Generic, Typeable, Eq, Show)
   deriving anyclass (ToJSON)
@@ -167,13 +165,6 @@ instance FromJSON (Some MeasureRange) where
          other -> fail $ "Unrecognised MeasureRange tag " <> show other
 
 --------------------------------------------------------------------------------
---  Lenses
---------------------------------------------------------------------------------
-
-makeFields ''Measure
-makePrisms ''MeasureRange
-
---------------------------------------------------------------------------------
 --  Smart Constructors
 --------------------------------------------------------------------------------
 
@@ -192,8 +183,8 @@ normaliseUnit = magnifyUnit 0
 
 magnifyMeasureUnit :: Integer -> Measure t -> Measure t
 magnifyMeasureUnit x =
-  over unit (magnifyUnit x) .
-  over amount (* (10 ^ (-x)))
+  over (field @"unit") (magnifyUnit x) .
+  over (field @"amount") (* (10 ^ (-x)))
 
 --------------------------------------------------------------------------------
 --  Combinators
@@ -226,8 +217,8 @@ toStandardUnits other = (other, 1)
 -- magnification.
 toStandardMeasure :: Measure t -> Measure t
 toStandardMeasure m =
-  let (newUnit, rescaleFactor) = toStandardUnits (m ^. unit)
-  in Measure ((m ^. amount) * rescaleFactor) newUnit
+  let (newUnit, rescaleFactor) = toStandardUnits (m ^. field @"unit")
+  in Measure ((m ^. field @"amount") * rescaleFactor) newUnit
 
 
 -- | If the measure is in litres, and is a volume that is easier to
@@ -235,12 +226,12 @@ toStandardMeasure m =
 -- Otherwise leaves it as is.
 tryLitresToSpoons :: Measure t -> Measure t
 tryLitresToSpoons m =
-  case m ^. unit of
+  case m ^. field @"unit" of
     Litres ->
       let conversions =
             [ (litresPerTeaspoon * n, Teaspoons) | n <- [1/8, 2/8 .. 2]] ++
             [ (litresPerTeaspoon * n, Tablespoons) | n <- [1/4, 2/4 .. 8]]
-      in case lookup (m ^. amount) conversions of
+      in case lookup (m ^. field @"amount") conversions of
         Just newUnit -> convertMeasureSimple newUnit m
         Nothing -> m
     _ -> m
@@ -250,7 +241,7 @@ tryLitresToSpoons m =
 remagnifyMeasure :: Measure t -> Measure t
 remagnifyMeasure m = magnifyMeasureUnit (-logAmountThrees) m
   where
-    logAmount = logBase 10 (fromRational (m ^. amount) :: Double)
+    logAmount = logBase 10 (fromRational (m ^. field @"amount") :: Double)
     logAmountThrees = floor (logAmount / 3)
 
 -- | Converts the measure into those units that are most understandable by
@@ -282,7 +273,8 @@ multiplierFromTo fromUnit toUnit =
 convertMeasureSimple :: Unit t -> Measure t -> Measure t
 convertMeasureSimple toUnit measure =
   Measure
-    ((measure ^. amount) * fromRational (multiplierFromTo (measure ^. unit) toUnit))
+    ((measure ^. field @"amount") *
+     fromRational (multiplierFromTo (measure ^. field @"unit") toUnit))
     toUnit
 
 --------------------------------------------------------------------------------

@@ -1,6 +1,3 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Reciprocal.Interaction.Core where
 
 import Reciprocal.Prelude
@@ -15,10 +12,11 @@ import qualified Reciprocal.Logging as L
 --------------------------------------------------------------------------------
 
 data Env m = Env
-  { _envRecipeHandler :: Handler m Recipe
-  , _envIngredientHandler :: Handler m Ingredient
-  , _envLogger :: L.Logger m
+  { recipeHandler :: Handler m Recipe
+  , ingredientHandler :: Handler m Ingredient
+  , logger :: L.Logger m
   }
+  deriving (Generic)
 
 newtype Interaction m a = Interaction
   { getInteraction :: ReaderT (Env m) m a
@@ -43,43 +41,29 @@ data SomeView
   | SVMealPlan MealPlanView
   | SVExportShopping ExportShoppingView
   | SVListShopping ListShoppingView
-  deriving (Show)
+  deriving (Show, Generic)
 
 
 data BrowseView = BrowseView
-  { _browseViewRecipes :: [Recipe]
-  , _browseViewSearchTerm :: Text
+  { recipes :: [Recipe]
+  , searchTerm :: Text
   }
-  deriving (Show)
+  deriving (Show, Generic)
 
 data RecipeView = RecipeView
-  { _recipeViewRecipe :: Recipe
-  , _recipeViewIsEditing :: Bool
+  { recipe :: Recipe
+  , isEditing :: Bool
   }
-  deriving (Show)
+  deriving (Show, Generic)
 
 data MealPlanView = MealPlanView
-  deriving (Show)
+  deriving (Show, Generic)
 
 data ExportShoppingView = ExportShoppingView
-  deriving (Show)
+  deriving (Show, Generic)
 
 data ListShoppingView = ListShoppingView
-  deriving (Show)
-
---------------------------------------------------------------------------------
---  Lenses
---------------------------------------------------------------------------------
-
-makeFields ''Env
-
-makePrisms ''SomeView
-
-makeFields ''BrowseView
-makeFields ''RecipeView
-makeFields ''MealPlanView
-makeFields ''ExportShoppingView
-makeFields ''ListShoppingView
+  deriving (Show, Generic)
 
 --------------------------------------------------------------------------------
 --  Combinators
@@ -87,5 +71,5 @@ makeFields ''ListShoppingView
 
 logWarning :: (Monad m) => Text -> Interaction m ()
 logWarning msg = do
-  lg <- view logger
+  lg <- view (field @"logger")
   lift $ L.logWarning lg msg

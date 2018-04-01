@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell            #-}
-
 module Reciprocal.Database
   (
     -- * Types
@@ -36,18 +34,17 @@ import qualified Streaming.Prelude as S
 
 
 data Database = Database
-  { _databaseRootDir :: FilePath
+  { rootDir :: FilePath
   }
-
-makeFields ''Database
+  deriving (Generic)
 
 -- | Opens the database, and creates it if it doesn't exist. Throws an exception
 -- if some file system error was encountered while opening the database.
 openDB :: Config -> IO Database
 openDB cfg = do
-  let _databaseRootDir = cfg ^. rootDir
-  createDirectoryIfMissing True _databaseRootDir
-  return (Database { _databaseRootDir })
+  let rootDir = cfg ^. (field @"rootDir")
+  createDirectoryIfMissing True rootDir
+  return (Database { rootDir })
 
 data LoadError
   = MalformedData Text
@@ -71,7 +68,7 @@ getJsonHandler
     :: (FromJSON a, ToJSON a, MonadResource m)
     => Text -> (a -> Text) -> Database -> Handler m a
 getJsonHandler typeName objectName db =
-  let rootPath = (db ^. rootDir) </> (typeName ^. unpacked)
+  let rootPath = (db ^. field @"rootDir") </> (typeName ^. unpacked)
       objectKey = Key . view packed . nameToFilename . objectName
   in Handler
      { objectKey
@@ -86,10 +83,10 @@ getJsonHandler typeName objectName db =
 --------------------------------------------------------------------------------
 
 getIngredientHandler :: (MonadResource m) => Database -> Handler m Ingredient
-getIngredientHandler = getJsonHandler "ingredients" (view name)
+getIngredientHandler = getJsonHandler "ingredients" (view (field @"name"))
 
 getRecipeHandler :: (MonadResource m) => Database -> Handler m Recipe
-getRecipeHandler = getJsonHandler "recipes" (view title)
+getRecipeHandler = getJsonHandler "recipes" (view (field @"title"))
 
 --------------------------------------------------------------------------------
 --  Internal

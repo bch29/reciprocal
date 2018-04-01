@@ -12,14 +12,14 @@ import qualified Streaming.Prelude as S
 
 initialBrowseView :: (Monad m) => Interaction m BrowseView
 initialBrowseView = return $ BrowseView
-  { _browseViewRecipes = []
-  , _browseViewSearchTerm = ""
+  { recipes = []
+  , searchTerm = ""
   }
 
 
 updateSearchTerm :: (Monad m) => Text -> BrowseView -> Interaction m BrowseView
 updateSearchTerm newSearch browseView = do
-  rhandler <- view recipeHandler
+  rhandler <- view (field @"recipeHandler")
   logWarning $ "Updating search term to " <> display newSearch
 
   let resStream = find rhandler newSearch
@@ -27,12 +27,12 @@ updateSearchTerm newSearch browseView = do
   results :> _ <- lift $ S.toList resStream
   logWarning $ "Got " <> display (length results) <> " results"
 
-  return (browseView & recipes .~ results & searchTerm .~ newSearch)
+  return (browseView & field @"recipes" .~ results & field @"searchTerm" .~ newSearch)
 
 
 selectRecipe :: (Monad m) => Key Recipe -> BrowseView -> Interaction m (Maybe RecipeView)
 selectRecipe key _ = do
-  rhandler <- view recipeHandler
+  rhandler <- view (field @"recipeHandler")
 
   mrecipe <- lift $ load rhandler key
   case mrecipe of

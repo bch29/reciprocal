@@ -31,9 +31,9 @@ run conf = do
   db <- openDB conf
   lg <- L.fileLogger "log"
   let env = Env
-        { _envRecipeHandler = getRecipeHandler db
-        , _envIngredientHandler = getIngredientHandler db
-        , _envLogger = lg
+        { recipeHandler = getRecipeHandler db
+        , ingredientHandler = getIngredientHandler db
+        , logger = lg
         }
 
       initialSearchTerm = "test"
@@ -42,10 +42,10 @@ run conf = do
     updateSearchTerm initialSearchTerm =<< initialBrowseView
 
   let initialState = SBrowsing $ StateBrowsing
-        { _stateBrowsingBrowseView = initialBrowseView'
-        , _stateBrowsingIsTyping = True
-        , _stateBrowsingBrowseList = initialBrowseList initialBrowseView'
-        , _stateBrowsingSearchBox = WE.editorText BrowseViewSearchBox (Just 1) initialSearchTerm
+        { browseView = initialBrowseView'
+        , isTyping = True
+        , browseList = initialBrowseList initialBrowseView'
+        , searchBox = WE.editorText BrowseViewSearchBox (Just 1) initialSearchTerm
         }
       -- buildVty = do
       --   v <- V.mkVty =<< V.standardIOConfig
@@ -59,23 +59,23 @@ handleEvent env (SBrowsing st) (VtyEvent e) = do
   case e of
     V.EvKey V.KEsc [] -> halt (SBrowsing st)
     V.EvKey (V.KChar 's') []
-      | not (st ^. isTyping) -> do
-          let st' = st & isTyping .~ True
+      | not (st ^. field @"isTyping") -> do
+          let st' = st & field @"isTyping" .~ True
           continue (SBrowsing st')
 
     V.EvKey V.KEnter []
-      | st ^. isTyping -> do
-          let newSearch = mconcat $ WE.getEditContents (st ^. searchBox)
-          st' <- liftIO $ interaction env $ st & browseView %%~ updateSearchTerm newSearch
-          continue (SBrowsing (st' & isTyping .~ False & updateBrowseList))
+      | st ^. field @"isTyping" -> do
+          let newSearch = mconcat $ WE.getEditContents (st ^. field @"searchBox")
+          st' <- liftIO $ interaction env $ st & field @"browseView" %%~ updateSearchTerm newSearch
+          continue (SBrowsing (st' & field @"isTyping" .~ False & updateBrowseList))
 
     ev
-      | st ^. isTyping -> do
-          st' <- st & searchBox %%~ WE.handleEditorEvent ev
+      | st ^. field @"isTyping" -> do
+          st' <- st & field @"searchBox" %%~ WE.handleEditorEvent ev
           continue (SBrowsing st')
 
       | otherwise -> do
-          st' <- st & browseList %%~ WL.handleListEvent ev
+          st' <- st & field @"browseList" %%~ WL.handleListEvent ev
           continue (SBrowsing st')
 
   -- ml' <- case e of
@@ -101,7 +101,7 @@ terminalApp env = App
   }
 
 initialBrowseList :: BrowseView -> WL.List Name Recipe
-initialBrowseList bv = WL.list BrowseViewList (toVectorOf (recipes.traverse) bv) 1
+initialBrowseList bv = WL.list BrowseViewList (toVectorOf (field @"recipes".traverse) bv) 1
 
 updateBrowseList :: StateBrowsing -> StateBrowsing
-updateBrowseList st = st & browseList .~ initialBrowseList (st ^. browseView)
+updateBrowseList st = st & field @"browseList" .~ initialBrowseList (st ^. field @"browseView")

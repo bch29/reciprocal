@@ -24,7 +24,7 @@ drawUI (SBrowsing st) = drawBrowsing st
 drawBrowsing :: StateBrowsing -> [Widget Name]
 drawBrowsing st = [ui]
   where
-    l = st ^. browseList
+    l = st ^. field @"browseList"
 
     label = txt "Search results"
 
@@ -33,7 +33,7 @@ drawBrowsing st = [ui]
       -- vLimit 15 $
       WL.renderList displayRecipe True l
 
-    helpMsg = if st ^. isTyping
+    helpMsg = if st ^. field @"isTyping"
       then
       [ WC.hCenter $ txt "Press enter to search."
       , WC.hCenter $ txt "Press Esc to exit."
@@ -46,7 +46,7 @@ drawBrowsing st = [ui]
       ]
 
     ui = WC.vCenter $ vBox $
-         [ WC.hCenter $ renderSearchBox st (st ^. searchBox)
+         [ WC.hCenter $ renderSearchBox st (st ^. field @"searchBox")
          , WC.hCenter box
          , txt " "
          ] ++ helpMsg
@@ -54,7 +54,7 @@ drawBrowsing st = [ui]
 renderSearchBox :: StateBrowsing -> WE.Editor Text Name -> Widget Name
 renderSearchBox st editor = WB.border $ hLimit 100 $
   txt "Search: " <+>
-  WE.renderEditor (txt . Text.unlines) (st ^. isTyping) editor
+  WE.renderEditor (txt . Text.unlines) (st ^. field @"isTyping") editor
 
 mkAttrMap :: State -> AttrMap
 mkAttrMap _ = attrMap V.defAttr
@@ -72,4 +72,4 @@ displayRecipe sel r =
         if sel
         then withAttr selRecipeAttr (txt $ "<" <> s <> ">")
         else txt s
-  in selStr $ (r ^. title)
+  in selStr $ (r ^. field @"title")

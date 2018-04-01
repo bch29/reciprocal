@@ -16,17 +16,18 @@ dependencies:
   - aeson
   - brick >= 0.34
   - bytestring
+  - conduit
   - containers
   - directory
   - exceptions
   - filepath
+  - generic-lens
   - hashable
   - lens
   - megaparsec >= 6.0
   - modern-uri
   - mtl
   - parser-combinators >= 0.4
-  - conduit
   - resourcet
   - singletons
   - streaming
@@ -49,6 +50,7 @@ default-extensions:
   - DeriveLift
   - DeriveTraversable
   - DerivingStrategies
+  - DuplicateRecordFields
   - EmptyCase
   - ExistentialQuantification
   - FlexibleContexts

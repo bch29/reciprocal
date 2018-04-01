@@ -28,24 +28,25 @@ parseRecipe = do
   t <- anyHeading 1
 
   initialDescCts <- restOfSection 2
-  let initialDesc = mempty & description .~
+  let initialDesc = mempty & field @"description" .~
         if initialDescCts == ""
         then Nothing
         else Just initialDescCts
 
   let parseComponent =
         choice . mapUntilLast try id $
-        [ partialRecipe source "Source" (Just <$> parseSource)
-        , partialRecipe description "Description" (Just <$> restOfSection 2)
-        , partialRecipe duration "Duration" (Just <$> parseRecipeDuration)
-        , partialRecipe servings "Servings" (Just <$> parseServings)
-        , partialRecipe ingredients "Ingredients" (bulleted (const parseRecipeIngredient))
-        , partialRecipe instructions "Instructions" (bulleted textInBullet)
+        [ partialRecipe (field @"source") "Source" (Just <$> parseSource)
+        , partialRecipe (field @"description") "Description" (Just <$> restOfSection 2)
+        , partialRecipe (field @"duration") "Duration" (Just <$> parseRecipeDuration)
+        , partialRecipe (field @"servings") "Servings" (Just <$> parseServings)
+        , partialRecipe (field @"ingredients") "Ingredients"
+          (bulleted (const parseRecipeIngredient))
+        , partialRecipe (field @"instructions") "Instructions" (bulleted textInBullet)
         ]
 
   components <- many parseComponent
   eof
-  return (mconcat (initialDesc : components) & title .~ t)
+  return (mconcat (initialDesc : components) & (field @"title") .~ t)
 
 --------------------------------------------------------------------------------
 --  Recipe Components

@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Reciprocal.Model.Recipe where
 
 import           Reciprocal.Prelude
@@ -32,10 +30,10 @@ data IngredientAttribute
 
 data RecipeIngredient =
   RecipeIngredient
-  { _recipeIngredientIngredient :: Either Text Ingredient
+  { ingredient :: Either Text Ingredient
     -- ^ 'Text' if the ingredient is unlisted in the database
-  , _recipeIngredientMeasure :: Some MeasureRange
-  , _recipeIngredientAttributes  :: [IngredientAttribute]
+  , measure :: Some MeasureRange
+  , attributes  :: [IngredientAttribute]
   }
   deriving (Show, Typeable, Generic)
   deriving anyclass (ToJSON, FromJSON)
@@ -54,27 +52,16 @@ data RecipeSource
 
 data Recipe =
   Recipe
-  { _recipeTitle        :: Text
-  , _recipeDescription  :: Maybe Text
-  , _recipeSource       :: Maybe RecipeSource
-  , _recipeDuration     :: Maybe RecipeDuration
-  , _recipeServings     :: Maybe Rational
-  , _recipeIngredients  :: [RecipeIngredient]
-  , _recipeInstructions :: [Text]
+  { title        :: Text
+  , description  :: Maybe Text
+  , source       :: Maybe RecipeSource
+  , duration     :: Maybe RecipeDuration
+  , servings     :: Maybe Rational
+  , ingredients  :: [RecipeIngredient]
+  , instructions :: [Text]
   }
   deriving (Show, Typeable, Generic)
   deriving anyclass (ToJSON, FromJSON)
-
---------------------------------------------------------------------------------
---  Lenses
---------------------------------------------------------------------------------
-
-makePrisms ''IngredientFineness
-makePrisms ''IngredientAttribute
-makeFields ''RecipeIngredient
-makeLenses ''RecipeDuration
-makePrisms ''RecipeSource
-makeFields ''Recipe
 
 --------------------------------------------------------------------------------
 --  Instances
@@ -83,17 +70,15 @@ makeFields ''Recipe
 instance Semigroup Recipe where
   r1 <> r2 =
     Recipe
-    ((r1 ^. title) <> (r2 ^. title))
-    ((r1 ^. description) <|> (r2 ^. description))
-    ((r1 ^. source) <|> (r2 ^. source))
-    ((r1 ^. duration) <|> (r2 ^. duration))
-    ((r1 ^. servings) <|> (r2 ^. servings))
-    ((r1 ^. ingredients) <> (r2 ^. ingredients))
-    ((r1 ^. instructions) <> (r2 ^. instructions))
+    { title        = (r1 ^. field @"title") <> (r2 ^. field @"title")
+    , description  = (r1 ^. field @"description") <|> (r2 ^. field @"description")
+    , source       = (r1 ^. field @"source") <|> (r2 ^. field @"source")
+    , duration     = (r1 ^. field @"duration") <|> (r2 ^. field @"duration")
+    , servings     = (r1 ^. field @"servings") <|> (r2 ^. field @"servings")
+    , ingredients  = (r1 ^. field @"ingredients") <> (r2 ^. field @"ingredients")
+    , instructions = (r1 ^. field @"instructions") <> (r2 ^. field @"instructions")
+    }
 
 instance Monoid Recipe where
   mempty = Recipe mempty Nothing Nothing Nothing Nothing [] []
   mappend = (<>)
-
--- data Recipe
-

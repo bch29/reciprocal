@@ -9,6 +9,6 @@ import Reciprocal.Model.Recipe
 
 viewRecipe :: (Monad m) => Recipe -> Interaction m RecipeView
 viewRecipe r = return $ RecipeView
-  { _recipeViewRecipe = r
-  , _recipeViewIsEditing = False
+  { recipe = r
+  , isEditing = False
   }
